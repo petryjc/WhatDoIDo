@@ -69,7 +69,7 @@ class API(object):
     
     password_hash = str(uuid.uuid4())
     count = Utils.execute("INSERT INTO Users (username, password, email, salt) VALUES (%s, SHA1(CONCAT(%s, %s)), %s, %s)", (body['username'], body['password'], password_hash, body['email'], password_hash) )
-
+    
     if(count == 1):
       return json.JSONEncoder().encode({
         "status" : Utils.status(0, "OK")

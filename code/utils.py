@@ -58,6 +58,14 @@ class Utils:
       if check not in body:
         errors = "%s'%s', " % (errors, check)
     return (len(errors) > 0 , json.JSONEncoder().encode( Utils.status_more( 10, "The following fields were not present: %s" % errors[:-2] )))
+  
+  @staticmethod
+  def validate_user(token):
+# Find the user ID of the person making the request.
+    results = Utils.query(""" SELECT user_id FROM User_Sessions WHERE session_token = %s; """, token)
+    if len( results ) is 0:
+      return (1, json.JSONEncoder().encode( Utils.status_more( 11, "No user is associated with that token")))
+    return (0, int(results[0]["user_id"]))
 
   @staticmethod
   def status(code, msg):

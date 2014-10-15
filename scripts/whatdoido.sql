@@ -19,3 +19,34 @@ CREATE TABLE User_Sessions
     CONSTRAINT PRIMARY KEY (user_id, session_token),
     CONSTRAINT FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
 );
+
+CREATE TABLE Locations
+(
+    location_id int PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    latitude FLOAT,
+    longitude FLOAT,
+    address VARCHAR(1000),
+    place VARCHAR(1000)
+);
+
+CREATE TABLE Users_Locations
+(
+    user_id int,
+    location_id int,
+    time DATETIME,
+    CONSTRAINT FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    CONSTRAINT FOREIGN KEY (location_id) REFERENCES Locations(location_id) ON DELETE CASCADE,
+    CONSTRAINT PRIMARY KEY (user_id, location_id, time)
+);
+
+INSERT INTO `Users` (`user_id`, `username`, `email`, `password`, `salt`) 
+VALUES ('1', 'mobile', 'mobile@summary.com', SHA1(CONCAT('mobile', 'bec7f06710081143365387b79aeb59ad')), 'bec7f06710081143365387b79aeb59ad');
+
+GRANT USAGE ON Summary.* TO 'sql_user'@'localhost';
+DROP USER 'sql_user'@'localhost';
+FLUSH PRIVILEGES;
+CREATE USER 'sql_user'@'localhost' IDENTIFIED BY 'sql_user_password';
+GRANT ALL PRIVILEGES ON Summary.* TO 'sql_user'@'localhost' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+
+

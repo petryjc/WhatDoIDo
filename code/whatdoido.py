@@ -13,5 +13,5 @@ class Root(object):
 root = Root()
 
 root.api = core.API()
-
+root.api.location = location.Location()
 cherrypy.quickstart(root)
