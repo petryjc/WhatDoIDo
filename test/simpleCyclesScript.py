@@ -1,20 +1,22 @@
-from utils import Utils
-from json import *
-import cherrypy
-import requests
-import datetime
-import random
-import uuid
-import urllib2
-import sys
-import platform
 import os
 import subprocess
+import datetime
+import random
+import json
+import uuid
+import sys
+import platform
+from json import *
+sys.path.insert(0, '../code')
+sys.path.insert(0, '../code/api')
+from utils import Utils
+from events import Event
+import urllib2
 
-home = [39.456519, -87.335669, "825 Foxcrest, Terre Haute, IN, 47803", "home"]
-work = [39.483597, -87.323689, "5500 Wabash Ave, Terre Haute, IN, 47803","work"]
-extra = [39.475398, -87.350511, "4420 Wabash Ave, Terre Haute, IN 47803", "extra"]
-routes = [[39.460346, -87.332729, "", "route 1"], [39.478484, -87.334671, "" ,"route 2"]]
+home = ["39.456519","-87.335669", "825 Foxcrest, Terre Haute, IN, 47803", "home"]
+work = ["39.483597", "-87.323689", "5500 Wabash Ave, Terre Haute, IN, 47803","work"]
+extra = ["39.475398", "-87.350511", "4420 Wabash Ave, Terre Haute, IN 47803", "extra"]
+routes = [["39.460346", "-87.332729", "", "route 1"], ["39.478484","-87.334671", "" ,"route 2"]]
 
 home_id = ""
 work_id = ""
@@ -25,26 +27,29 @@ user_id = ""
 token = ""
 
 def callPostCommand(command, location):
-  #url = "http://" + platform.node() + ".wlan.rose-hulman.edu/" + location
-  url = "http://localhost/" + location
-  #url = "http://summary.pneumaticsystem.com/" + location
-  headers = {"Content-Type" : 'application/json'}
-  req = urllib2.Request(url, command, headers)
-  response = urllib2.urlopen(req)  
-  the_page = response.read()
+	#url = "http://" + platform.node() + ".wlan.rose-hulman.edu/" + location
+	url = "http://localhost/" + location
+	#url = "http://summary.pneumaticsystem.com/" + location
+	headers = {"Content-Type" : 'application/json'}
+	req = urllib2.Request(url, command, headers)
+	response = urllib2.urlopen(req)  
+	the_page = response.read()
   
-  return the_page
+	return the_page
 
 
 
 def initLocations():
 
-	home_id = Utils.execute_id("""INSERT INTO Locations(latitude, longitude, address, place) VALUES(%f, %f, %s, %s)""", home[0], home[1],home[2],[3])
-	work_id = Utils.execute_id("""INSERT INTO Locations(latitude, longitude, address, place) VALUES(%f, %f, %s, %s)""", work[0], work[1], work[2], work[3])
-	extra_id = Utils.execute_id("""INSERT INTO Locations(latitude, longitude, address, place) VALUES(%f, %f, %s, %s)""", extra[0], extra[1],extra[2], extra[3])
+
+	home_id = str(Utils.execute_id("""INSERT INTO Locations(latitude, longitude, address, place) VALUES(%s, %s, %s, %s)""", (home[0],home[1],home[2],home[3])))
+	work_id = str(Utils.execute_id("""INSERT INTO Locations(latitude, longitude, address, place) VALUES(%s, %s, %s, %s)""", (work[0],work[1], work[2], work[3])))
+	extra_id = str(Utils.execute_id("""INSERT INTO Locations(latitude, longitude, address, place) VALUES(%s, %s, %s, %s)""", (extra[0],extra[1],extra[2], extra[3])))
 
 	for i in routes:
-		route_ids.append(Utils.execute_id("""INSERT INTO Locations(latitude, longitude, address, place) VALUES(%f, %f, %s, %s)""", i[0], i[1], i[2],i[3]))
+		route_ids.append(str(Utils.execute_id("""INSERT INTO Locations(latitude, longitude, address, place) VALUES(%s, %s, %s, %s)""", (i[0], i[1],i[2],i[3]))))
+	
+	return home_id
 
 def initUser():
 
@@ -66,7 +71,7 @@ def initUser():
 	"password" : password,
 	})
 
-	loginResult = json.loads(callPostCommand(self.loginCommand, 'api/login'))
+	loginResult = json.loads(callPostCommand(loginCommand, 'api/login'))
 	token = loginResult['token']
 
 	user_id = Utils.validate_user(token)
@@ -114,12 +119,26 @@ def addEvent(place, timeCounter ,hours):
 	return timeCounter
 
 def add(place, time):
+	print("hey: ")
+	print(place)
 	if (place != -1):
-		Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time) VALUES(%s, %s, %s)""", (user_id, place, time))
+		Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time) VALUES(%s, %s, %s)""", (str(user_id), str(place), time))
 
 def runScript():
 	initLocations()
-	setUpUser()
+	initUser()
 	simpleCycles()
 
-runScript()
+
+
+
+
+
+
+
+
+
+
+
+
+#runScript()
