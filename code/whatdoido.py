@@ -14,4 +14,5 @@ root = Root()
 
 root.api = core.API()
 root.api.location = location.Location()
+root.api.suggestion = suggestions.Suggestion()
 cherrypy.quickstart(root)

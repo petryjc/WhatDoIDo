@@ -8,7 +8,9 @@ import sys
 import platform
 from json import *
 sys.path.insert(0, '../code')
+sys.path.insert(0, '../code/api')
 from utils import Utils
+from events import Event
 import urllib2
 
 def callPostCommand(command, location):
@@ -121,6 +123,9 @@ class Test(unittest.TestCase):
     locationResult = json.loads(callPostCommand(locationSaveCommand, 'api/location/add'))
     self.assertEqual(locationResult['status']['code'],0)
     
+  def test_suggestion_single(self):
+    self.assertTrue( callPostCommand("", 'api/suggestion/single'))
+
   def tearDown(self):
     deleteAccountCommand = json.JSONEncoder().encode({
       "username" : self.username,

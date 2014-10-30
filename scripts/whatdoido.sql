@@ -39,6 +39,16 @@ CREATE TABLE Users_Locations
     CONSTRAINT PRIMARY KEY (user_id, location_id, time)
 );
 
+CREATE TABLE Cyclical_Events
+(
+    event_id int PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    user_id int,
+    location_id int,
+    name VARCHAR(100),
+    CONSTRAINT FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    CONSTRAINT FOREIGN KEY (location_id) REFERENCES Locations(location_id) ON DELETE CASCADE
+);
+
 INSERT INTO `Users` (`user_id`, `username`, `email`, `password`, `salt`) 
 VALUES ('1', 'mobile', 'mobile@summary.com', SHA1(CONCAT('mobile', 'bec7f06710081143365387b79aeb59ad')), 'bec7f06710081143365387b79aeb59ad');
 
