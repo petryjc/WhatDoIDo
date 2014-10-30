@@ -13,121 +13,125 @@ from utils import Utils
 from events import Event
 import urllib2
 
-home = ["39.456519","-87.335669", "825 Foxcrest, Terre Haute, IN, 47803", "home"]
-work = ["39.483597", "-87.323689", "5500 Wabash Ave, Terre Haute, IN, 47803","work"]
-extra = ["39.475398", "-87.350511", "4420 Wabash Ave, Terre Haute, IN 47803", "extra"]
-routes = [["39.460346", "-87.332729", "", "route 1"], ["39.478484","-87.334671", "" ,"route 2"]]
 
-home_id = ""
-work_id = ""
-extra_id = ""
-route_ids = []
+class TestScript:
 
-user_id = ""
-token = ""
+	def __init__(self):
+		self.home = ["39.456519","-87.335669", "825 Foxcrest, Terre Haute, IN, 47803", "home"]
+		self.work = ["39.483597", "-87.323689", "5500 Wabash Ave, Terre Haute, IN, 47803","work"]
+		self.extra = ["39.475398", "-87.350511", "4420 Wabash Ave, Terre Haute, IN 47803", "extra"]
+		self.routes = [["39.460346", "-87.332729", "", "route 1"], ["39.478484","-87.334671", "" ,"route 2"]]
 
-def callPostCommand(command, location):
-	#url = "http://" + platform.node() + ".wlan.rose-hulman.edu/" + location
-	url = "http://localhost/" + location
-	#url = "http://summary.pneumaticsystem.com/" + location
-	headers = {"Content-Type" : 'application/json'}
-	req = urllib2.Request(url, command, headers)
-	response = urllib2.urlopen(req)  
-	the_page = response.read()
-  
-	return the_page
+		self.home_id = ""
+		self.work_id = ""
+		self.extra_id = ""
+		self.route_ids = []
 
+		self.user_id = ""
+		self.token = ""
 
-
-def initLocations():
-
-
-	home_id = str(Utils.execute_id("""INSERT INTO Locations(latitude, longitude, address, place) VALUES(%s, %s, %s, %s)""", (home[0],home[1],home[2],home[3])))
-	work_id = str(Utils.execute_id("""INSERT INTO Locations(latitude, longitude, address, place) VALUES(%s, %s, %s, %s)""", (work[0],work[1], work[2], work[3])))
-	extra_id = str(Utils.execute_id("""INSERT INTO Locations(latitude, longitude, address, place) VALUES(%s, %s, %s, %s)""", (extra[0],extra[1],extra[2], extra[3])))
-
-	for i in routes:
-		route_ids.append(str(Utils.execute_id("""INSERT INTO Locations(latitude, longitude, address, place) VALUES(%s, %s, %s, %s)""", (i[0], i[1],i[2],i[3]))))
-	
-	return home_id
-
-def initUser():
-
-	username  = "CyclesTest"
-	password  = "testing"
-	email     = "glenngs@rose-hulman.edu"
-	device_id = str(uuid.uuid4())	
-	
-	registerCommand = json.JSONEncoder().encode({
-	"username" : username,
-	"password" : password,
-	"email" : email
-	})
-	
-	registrationResult = json.loads(callPostCommand(registerCommand, 'api/register'))
-
-	loginCommand = json.JSONEncoder().encode({
-	"username" : username,
-	"password" : password,
-	})
-
-	loginResult = json.loads(callPostCommand(loginCommand, 'api/login'))
-	token = loginResult['token']
-
-	user_id = Utils.validate_user(token)
+	def callPostCommand(self,command,location):
+		#url = "http://" + platform.node() + ".wlan.rose-hulman.edu/" + location
+		url = "http://localhost/" + location
+		#url = "http://summary.pneumaticsystem.com/" + location
+		headers = {"Content-Type" : 'application/json'}
+		req = urllib2.Request(url, command, headers)
+		response = urllib2.urlopen(req)  
+		the_page = response.read()
+	  
+		return the_page
 
 
-def simpleCycles():
-
-	timeCounter = datetime.datetime(2014, 9, 1)
-	timeDelta = datetime.timedelta(minutes=5)
-
-	for o in range(0,4):
-		for i in range(0, 7):
-			if i < 6:
-				timeCounter = addEvent(home_id, timeCounter, 8)
-				timeCounter = misc(route_ids, timeCounter)        
-				timeCounter = addEvent(work_id, timeCounter, 8)
-				timeCounter = misc(route_ids, timeCounter)
-			else:
-				timeCounter = addEvent(home_id, timeCounter, 24)
-				continue
-			if i < 3:
-				timeCounter = addEvent(extra_id, timeCounter, 3)
-				timeCounter = misc(route_ids, timeCounter)
-
-			temp = timeCounter
-			while timeCounter.day == temp.day:
-				temp = temp + timeDelta
-				add(home_id, temp)
-			timeCounter = temp
 
 
-def misc(routes, timeCounter):
-	timeDelta = datetime.timedelta(minutes=5)
-	for l in range(0,4):
-		timeCounter = timeCounter + timeDelta
-		add(routes[random.randint(0, len(routes) - 1)], timeCounter)
-	return timeCounter
+	def initLocations(self):
 
 
-def addEvent(place, timeCounter ,hours):
-	timeDelta = datetime.timedelta(minutes=5)
-	for k in range(0, hours * 12): 
-		timeCounter = timeCounter + timeDelta
-		add(place, timeCounter)
-	return timeCounter
+		self.home_id = str(Utils.execute_id("""INSERT INTO Locations(latitude, longitude, address, place) VALUES(%s, %s, %s, %s)""", (self.home[0],self.home[1],self.home[2],self.home[3])))
+		self.work_id = str(Utils.execute_id("""INSERT INTO Locations(latitude, longitude, address, place) VALUES(%s, %s, %s, %s)""", (self.work[0],self.work[1],self.work[2],self.work[3])))
+		self.extra_id = str(Utils.execute_id("""INSERT INTO Locations(latitude, longitude, address, place) VALUES(%s, %s, %s, %s)""", (self.extra[0],self.extra[1],self.extra[2],self.extra[3])))
 
-def add(place, time):
-	print("hey: ")
-	print(place)
-	if (place != -1):
-		Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time) VALUES(%s, %s, %s)""", (str(user_id), str(place), time))
+		for i in self.routes:
+			self.route_ids.append(str(Utils.execute_id("""INSERT INTO Locations(latitude, longitude, address, place) VALUES(%s, %s, %s, %s)""", (i[0], i[1],i[2],i[3]))))
+		
+		return self.home_id
 
-def runScript():
-	initLocations()
-	initUser()
-	simpleCycles()
+	def initUser(self):
+
+		username  = "CyclesTest"
+		password  = "testing"
+		email     = "glenngs@rose-hulman.edu"
+		
+		registerCommand = json.JSONEncoder().encode({
+		"username" : username,
+		"password" : password,
+		"email" : email
+		})
+		
+		registrationResult = json.loads(callPostCommand(registerCommand, 'api/register'))
+
+		loginCommand = json.JSONEncoder().encode({
+		"username" : username,
+		"password" : password,
+		})
+
+		loginResult = json.loads(callPostCommand(loginCommand, 'api/login'))
+		self.token = loginResult['token']
+
+		self.user_id = Utils.validate_user(token)
+
+
+	def simpleCycles(self):
+
+		timeCounter = datetime.datetime(2014, 9, 1)
+		timeDelta = datetime.timedelta(minutes=5)
+
+		for o in range(0,4):
+			for i in range(0, 7):
+				if i < 6:
+					timeCounter = addEvent(self.home_id, timeCounter, 8)
+					timeCounter = misc(self.route_ids, timeCounter)        
+					timeCounter = addEvent(self.work_id, timeCounter, 8)
+					timeCounter = misc(self.route_ids, timeCounter)
+				else:
+					timeCounter = addEvent(self.home_id, timeCounter, 24)
+					continue
+				if i < 3:
+					timeCounter = addEvent(self.extra_id, timeCounter, 3)
+					timeCounter = misc(self.route_ids, timeCounter)
+
+				temp = timeCounter
+				while timeCounter.day == temp.day:
+					temp = temp + timeDelta
+					add(self.home_id, temp)
+				timeCounter = temp
+
+
+	def misc(self,routes,timeCounter):
+		timeDelta = datetime.timedelta(minutes=5)
+		for l in range(0,4):
+			timeCounter = timeCounter + timeDelta
+			add(routes[random.randint(0, len(routes) - 1)], timeCounter)
+		return timeCounter
+
+
+	def addEvent(self,place, timeCounter ,hours):
+		timeDelta = datetime.timedelta(minutes=5)
+		for k in range(0, hours * 12): 
+			timeCounter = timeCounter + timeDelta
+			add(place, timeCounter)
+		return timeCounter
+
+	def add(self,place,time):
+		print("hey: ")
+		print(place)
+		if (place != -1):
+			Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time) VALUES(%s, %s, %s)""", (str(self.user_id), str(place), time))
+
+	def runScript(self):
+		initLocations()
+		initUser()
+		simpleCycles()
 
 
 
