@@ -45,6 +45,8 @@ CREATE TABLE Cyclical_Events
     user_id int,
     location_id int,
     name VARCHAR(100),
+    cycle_type ENUM("daily", "weekly", "monthly"),
+    occurances VARCHAR(10000),
     CONSTRAINT FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
     CONSTRAINT FOREIGN KEY (location_id) REFERENCES Locations(location_id) ON DELETE CASCADE
 );

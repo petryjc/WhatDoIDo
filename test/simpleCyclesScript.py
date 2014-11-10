@@ -20,7 +20,7 @@ class TestScript:
 		self.home = ["39.456519","-87.335669", "825 Foxcrest, Terre Haute, IN, 47803", "home"]
 		self.work = ["39.483597", "-87.323689", "5500 Wabash Ave, Terre Haute, IN, 47803","work"]
 		self.extra = ["39.475398", "-87.350511", "4420 Wabash Ave, Terre Haute, IN 47803", "extra"]
-		self.routes = [["39.460346", "-87.332729", "", "route 1"], ["39.478484","-87.334671", "" ,"route 2"]]
+		self.routes = [["39.460346", "-87.332729", "route 1", "route 1"], ["39.478484","-87.334671", "route 2" ,"route 2"]]
 
 		self.home_id = ""
 		self.work_id = ""
@@ -40,9 +40,6 @@ class TestScript:
 		the_page = response.read()
 	  
 		return the_page
-
-
-
 
 	def initLocations(self):
 
@@ -68,17 +65,18 @@ class TestScript:
 		"email" : email
 		})
 		
-		registrationResult = json.loads(callPostCommand(registerCommand, 'api/register'))
+		registrationResult = json.loads(self.callPostCommand(registerCommand, 'api/register'))
 
 		loginCommand = json.JSONEncoder().encode({
 		"username" : username,
 		"password" : password,
 		})
 
-		loginResult = json.loads(callPostCommand(loginCommand, 'api/login'))
-		self.token = loginResult['token']
+		loginResult = json.loads(self.callPostCommand(loginCommand, 'api/login'))
+		self.token =str(loginResult['token'])
 
-		self.user_id = Utils.validate_user(token)
+		self.user_id = Utils.validate_user(self.token)[1]
+		
 
 
 	def simpleCycles(self):
@@ -89,21 +87,21 @@ class TestScript:
 		for o in range(0,4):
 			for i in range(0, 7):
 				if i < 6:
-					timeCounter = addEvent(self.home_id, timeCounter, 8)
-					timeCounter = misc(self.route_ids, timeCounter)        
-					timeCounter = addEvent(self.work_id, timeCounter, 8)
-					timeCounter = misc(self.route_ids, timeCounter)
+					timeCounter = self.addEvent(self.home_id, timeCounter, 8)
+					timeCounter = self.misc(self.route_ids, timeCounter)        
+					timeCounter = self.addEvent(self.work_id, timeCounter, 8)
+					timeCounter = self.misc(self.route_ids, timeCounter)
 				else:
-					timeCounter = addEvent(self.home_id, timeCounter, 24)
+					timeCounter = self.addEvent(self.home_id, timeCounter, 24)
 					continue
 				if i < 3:
-					timeCounter = addEvent(self.extra_id, timeCounter, 3)
-					timeCounter = misc(self.route_ids, timeCounter)
+					timeCounter = self.addEvent(self.extra_id, timeCounter, 3)
+					timeCounter = self.misc(self.route_ids, timeCounter)
 
 				temp = timeCounter
 				while timeCounter.day == temp.day:
 					temp = temp + timeDelta
-					add(self.home_id, temp)
+					self.add(self.home_id, temp)
 				timeCounter = temp
 
 
@@ -111,7 +109,7 @@ class TestScript:
 		timeDelta = datetime.timedelta(minutes=5)
 		for l in range(0,4):
 			timeCounter = timeCounter + timeDelta
-			add(routes[random.randint(0, len(routes) - 1)], timeCounter)
+			self.add(routes[random.randint(0, len(routes) - 1)], timeCounter)
 		return timeCounter
 
 
@@ -119,7 +117,7 @@ class TestScript:
 		timeDelta = datetime.timedelta(minutes=5)
 		for k in range(0, hours * 12): 
 			timeCounter = timeCounter + timeDelta
-			add(place, timeCounter)
+			self.add(place, timeCounter)
 		return timeCounter
 
 	def add(self,place,time):
@@ -129,9 +127,8 @@ class TestScript:
 			Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time) VALUES(%s, %s, %s)""", (str(self.user_id), str(place), time))
 
 	def runScript(self):
-		initLocations()
-		initUser()
-		simpleCycles()
+		self.initUser()
+		self.simpleCycles()
 
 
 

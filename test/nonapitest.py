@@ -8,7 +8,7 @@ from api.events import Event
 
 class Test(unittest.TestCase):
   def test_create_cyclical_event(self):
-    print Event().generateCyclicalEvents(1)  
+    print Event().generateCyclicalEvents(423)  
 
 if __name__ == '__main__':
   unittest.main()
