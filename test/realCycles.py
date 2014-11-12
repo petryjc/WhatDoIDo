@@ -1,17 +1,17 @@
-#import os
-#import subprocess
+import os
+import subprocess
 import datetime
 import random
-#import json
-#import uuid
-#import sys
-#import platform
-#from json import *
-#sys.path.insert(0, '../code')
-#sys.path.insert(0, '../code/api')
-#from utils import Utils
-#from events import Event
-#import urllib2
+import json
+import uuid
+import sys
+import platform
+from json import *
+sys.path.insert(0, '../code')
+sys.path.insert(0, '../code/api')
+from utils import Utils
+from events import Event
+import urllib2
 
 
 class TestScript:
@@ -128,14 +128,13 @@ class TestScript:
 				for i in range(0, 7):
 
 
-					print("==============================" + str(i) + "==============================") 
 					#daily
 					if random.randint(0,100) > 15:
 						timeCounter = self.addEvent(self.daily_id, timeCounter, 1)
 					else:
 						timeCounter = self.addEvent(self.home_id, timeCounter, 1)
 
-					if timeCounter.day == 1:
+					if timeCounter.day == 2:
 						timeCounter = self.addEvent(self.monthly_id, timeCounter, 1)
 					else:
 						timeCounter = self.addEvent(self.home_id, timeCounter, 1)						 
@@ -194,9 +193,9 @@ class TestScript:
 		return timeCounter
 
 	def add(self,place,time):
-		print(place)
-		#if (place != -1):
-		#	Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time) VALUES(%s, %s, %s)""", (str(self.user_id), str(place), time))
+		#print(place)
+		if (place != -1):
+			Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time) VALUES(%s, %s, %s)""", (str(self.user_id), str(place), time))
 
 	def runScript(self):
 		self.initUser()
