@@ -2,6 +2,7 @@ from utils import Utils
 import cherrypy
 import json
 from datetime import datetime, timedelta, date, time
+import datetime
 
 def partition(l, attr):
     d = {}
@@ -27,7 +28,7 @@ class Event(object):
     #TODO
     return "List (TODO)"
 
-  def generateCyclicalEvents(self, user_id):
+  def generateCyclicalEvents(self, user_id, start_time = datetime.MINYEAR, end_time = datetime.MAXYEAR):
     Utils.execute("DELETE FROM Cyclical_Events WHERE user_id = %s", (user_id)) #remove previous eyclical events
     travel_history = Utils.query("""SELECT * FROM Locations l JOIN Users_Locations ul ON l.location_id = ul.location_id WHERE ul.user_id = %s ORDER BY ul.time""", (user_id))
     
