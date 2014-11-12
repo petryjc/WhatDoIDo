@@ -25,7 +25,7 @@ class TestScript:
 		self.daily = ["0.0", "0.0", "daily", "daily"]
 		self.routes = [["39.460346", "-87.332729", "route 1", "route 1"], ["39.478484","-87.334671", "route 2" ,"route 2"]]
 		self.randoms = [["4.0","4.0", "random 1", "random 1"],["5.0","5.0", "random 2", "random 2"],["6.0","6.0", "random 3", "random 3"],["7.0","7.0", "random 4", "random 4"]]
-		self.monthly_id = ["30.00", "30.00", "a monthly place", "monthly"]
+		self.monthly = ["30.00", "30.00", "a monthly place", "monthly"]
 
 		self.home_id = "home"
 		self.work_id = "work"
