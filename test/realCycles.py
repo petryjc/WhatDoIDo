@@ -32,8 +32,8 @@ class TestScript:
 		self.extra_id = "extra"
 		self.weekly_id = "weekly"
 		self.daily_id = "daily"
-		self.random_ids = [1,2,3,4]
-		self.route_ids = [5,6]
+		self.random_ids = []
+		self.route_ids = []
 		self.monthly_id = "monthly"
 
 		self.user_id = ""
@@ -72,7 +72,7 @@ class TestScript:
 
 		username  = "CyclesTest2"
 		password  = "testing"
-		email     = "glenngs@rose-hulman.edu"
+		email     = "fake@rose-hulman.edu"
 		
 		registerCommand = json.JSONEncoder().encode({
 		"username" : username,
@@ -88,6 +88,8 @@ class TestScript:
 		})
 
 		loginResult = json.loads(self.callPostCommand(loginCommand, 'api/login'))
+		print(loginResult)
+                print registrationResult
 		self.token =str(loginResult['token'])
 
 		self.user_id = Utils.validate_user(self.token)[1]
