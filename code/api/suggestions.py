@@ -1,7 +1,8 @@
 from utils import Utils
+from timeutils import Day, Week, Month
 import cherrypy
 import json
-from datetime import datetime
+from datetime import *
 
 class Suggestion(object):
   @cherrypy.expose
@@ -21,3 +22,43 @@ class Suggestion(object):
         "cost":11
       }
     )
+
+  @cherrypy.expose
+  def calendar(self): 
+    body = json.JSONDecoder().decode( cherrypy.request.body.read() )
+    check = Utils.arg_check(body, ["token","beginning","ending"])
+
+    if (check[0]): 
+      return check[1]
+
+    # Find the user ID of the person making the request.
+    user_check = Utils.validate_user(body["token"])
+    if(user_check[0]):
+      return user_check[1]
+    user_id = user_check[1]
+
+    events = Utils.query("""SELECT * FROM Cyclical_Events c JOIN Locations l ON c.location_id = l.location_id  WHERE user_id = %s""", (user_id))
+
+    beginning = datetime.strptime(body["beginning"],"%m-%d-%Y").date()
+    ending = datetime.strptime(body["ending"],"%m-%d-%Y").date()
+
+    calendar = []
+
+    for day in [datetime.combine(beginning + timedelta(n), datetime.min.time()) for n in range((ending-beginning).days + 1)]:
+      for cycleType in [Day,Week,Month]:
+        dayStartSeconds = cycleType.seconds(day)
+        dayEndSeconds = cycleType.seconds(day + timedelta(hours=23, minutes=59))
+        events_of_type = [i for i in events if i["cycle_type"] == cycleType.NAME]
+        for event in events_of_type:
+          for occurance in json.loads(event["occurances"]):
+            if occurance[0] > dayStartSeconds and occurance[0] < dayEndSeconds:
+              calendar.append({
+                "title" : event["name"],
+                "location" : event["address"],
+                "justification" : event["event_id"],
+                "beginning" : (day + timedelta(seconds=occurance[0] - dayStartSeconds)).isoformat(),
+                "ending" : (day + timedelta(seconds=occurance[1] - dayStartSeconds)).isoformat()
+              })
+
+    return json.JSONEncoder().encode(calendar)
+
