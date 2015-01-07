@@ -47,6 +47,7 @@ class Event(object):
     
     maxsep = 600 #separation in seconds between entries in the same cycle 
     cycle_event_list = []
+    non_cyclic_list = []
     for location_block_list in parts.values():
       loc = location_block_list[0]
       for sorter in [Day, Week, Month]:
@@ -97,6 +98,8 @@ class Event(object):
     for remaining_event in cycle_event_list:
       Utils.execute("INSERT INTO Cyclical_Events(user_id, location_id, name, cycle_type, occurances) VALUE(%s,%s,%s,%s,%s)",
             (remaining_event["user_id"],remaining_event["location_id"],remaining_event["address"],remaining_event["cycle_type"],json.JSONEncoder().encode(remaining_event["occurances"])))
+
+    return location_block_list
 
 
 
