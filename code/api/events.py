@@ -105,8 +105,8 @@ class Event(object):
     return location_block_list
 
   def generateSpanningEvents(self, user_id, location_block_list, start_time = datetime(1900,1,1), end_time = datetime(MAXYEAR,12,31)):
-      min_time_between = ()
-      max_time_between = None
+      min_time_between = timedelta.max
+      max_time_between = timedelta.min
       for i in range(len(location_block_list)-1):
         time_between = location_block_list[i+1].start_time - location_block_list[i].end_time
         if time_between < min_time_between:
