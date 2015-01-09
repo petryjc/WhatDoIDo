@@ -1,17 +1,17 @@
-#import os
-#import subprocess
+import os
+import subprocess
 import datetime
 import random
-#import json
-#import uuid
-#import sys
-#import platform
-#from json import *
-#sys.path.insert(0, '../code')
-#sys.path.insert(0, '../code/api')
-#from utils import Utils
-#from events import Event
-#import urllib2
+import json
+import uuid
+import sys
+import platform
+from json import *
+sys.path.insert(0, '../code')
+sys.path.insert(0, '../code/api')
+from utils import Utils
+from events import Event
+import urllib2
 
 
 class TestScript:
@@ -27,7 +27,7 @@ class TestScript:
 		self.randoms = [["4.0","4.0", "random 1", "random 1"],["5.0","5.0", "random 2", "random 2"],["6.0","6.0", "random 3", "random 3"],["7.0","7.0", "random 4", "random 4"]]
 		self.monthly = ["30.00", "30.00", "a monthly place", "monthly"]
 
-		self.home_id = "home"
+		self.home_id = 123
 		self.work_id = "work"
 		self.extra_id = "extra"
 		self.weekly_id = "weekly"
