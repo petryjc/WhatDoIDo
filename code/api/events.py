@@ -39,6 +39,9 @@ class Event(object):
     location_blocks = [LocationBlock(list(travel_history).pop(0))]
     for d in travel_history:
       if (d["location_id"] == location_blocks[-1].location_id):
+        if (d["time"] - location_blocks[-1].end_time) >= timedelta(minutes=20):
+            # Spent at least 20 minutes away. This is a new event.
+            location_blocks.append(LocationBlock(d))
         location_blocks[-1].end_time = d["time"]
       else:
         location_blocks.append(LocationBlock(d))
@@ -102,18 +105,16 @@ class Event(object):
     return location_block_list
 
   def generateSpanningEvents(self, user_id, location_block_list, start_time = datetime(1900,1,1), end_time = datetime(MAXYEAR,12,31)):
-    for loc in location_block_list:
-        location_history = Utils.query("""SELECT * FROM Locations l JOIN Users_Locations ul ON l.location_id = ul.location_id WHERE ul.user_id = %s AND l.location_id = %s AND time BETWEEN %s AND %s ORDER BY ul.time""", (user_id, loc.location_id, start_time, end_time))
-        min_time_between = ()
-        max_time_between = None
-        for i in range(len(location_history)-1):
-          time_between = location_history(i+1).start_time - location_history(i).end_time
-          if time_between < min_time_between:
-            min_time_between = time_between
-          if time_between > max_time_between:
-            max_time_between = time_between
-        range_median_time = (max_time_between + min_time_between)/2
-        print range_median_time;
+      min_time_between = ()
+      max_time_between = None
+      for i in range(len(location_block_list)-1):
+        time_between = location_block_list(i+1).start_time - location_block_list(i).end_time
+        if time_between < min_time_between:
+          min_time_between = time_between
+        if time_between > max_time_between:
+          max_time_between = time_between
+      range_median_time = (max_time_between + min_time_between)/2
+      print range_median_time;
 
 
 
