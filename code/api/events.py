@@ -114,7 +114,9 @@ class Event(object):
         if time_between > max_time_between:
           max_time_between = time_between
       range_median_time = (max_time_between + min_time_between)/2
-      print range_median_time;
+      print range_median_time
+      print min_time_between
+      print max_time_between
 
 
 
