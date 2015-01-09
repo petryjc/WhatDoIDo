@@ -108,7 +108,7 @@ class Event(object):
       min_time_between = ()
       max_time_between = None
       for i in range(len(location_block_list)-1):
-        time_between = location_block_list(i+1).start_time - location_block_list(i).end_time
+        time_between = location_block_list[i+1].start_time - location_block_list[i].end_time
         if time_between < min_time_between:
           min_time_between = time_between
         if time_between > max_time_between:
