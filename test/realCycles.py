@@ -1,17 +1,17 @@
-import os
-import subprocess
+#import os
+#import subprocess
 import datetime
 import random
-import json
-import uuid
-import sys
-import platform
-from json import *
-sys.path.insert(0, '../code')
-sys.path.insert(0, '../code/api')
-from utils import Utils
-from events import Event
-import urllib2
+#import json
+#import uuid
+#import sys
+#import platform
+#from json import *
+#sys.path.insert(0, '../code')
+#sys.path.insert(0, '../code/api')
+#from utils import Utils
+#from events import Event
+#import urllib2
 
 
 class TestScript:
@@ -70,9 +70,9 @@ class TestScript:
 
 	def initUser(self):
 
-		username  = "CyclesTest2"
+		username  = "SpanningTest"
 		password  = "testing"
-		email     = "glenngs@rose-hulman.edu"
+		email     = "bs@rose-hulman.edu"
 		
 		registerCommand = json.JSONEncoder().encode({
 		"username" : username,
@@ -92,6 +92,28 @@ class TestScript:
 
 		self.user_id = Utils.validate_user(self.token)[1]
 		
+
+	def spanningCycles(self):
+		timeCounter = datetime.datetime(2014, 9, 1)
+		timeDelta = datetime.timedelta(minutes=5)
+		dayCounter = 0
+
+		for i in range(0,500):
+			counter = 0
+			#print i
+			#print timeCounter
+			if dayCounter > 5 and random.randint(0,5) == 0 or dayCounter == 10: 
+				timeCounter = self.addEvent(self.home_id, timeCounter, 2)
+				while counter < 264:
+					timeCounter +=timeDelta
+					counter += 1
+				dayCounter = 0
+				#print "DID IT!!"
+			else:
+				while counter < 288:
+					timeCounter+=timeDelta
+					counter += 1
+			dayCounter += 1	
 
 
 	def simpleCycles(self):
@@ -127,8 +149,8 @@ class TestScript:
 			for o in range(0,4):
 				for i in range(0, 7):
 
-
 					#daily
+					print("========================== " + str(i) + " =============================")
 					if random.randint(0,100) > 15:
 						timeCounter = self.addEvent(self.daily_id, timeCounter, 1)
 					else:
@@ -193,9 +215,9 @@ class TestScript:
 		return timeCounter
 
 	def add(self,place,time):
-		#print(place)
-		if (place != -1):
-			Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time) VALUES(%s, %s, %s)""", (str(self.user_id), str(place), time))
+		print(place)
+		#if (place != -1):
+		#	Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time) VALUES(%s, %s, %s)""", (str(self.user_id), str(place), time))
 
 	def runScript(self):
 		self.initUser()
