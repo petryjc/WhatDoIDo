@@ -101,7 +101,7 @@ class Event(object):
 
     return location_block_list
 
-  def generateSpanningEvents(self, user_id, location_block_list, start_time = datetime(1900,1,1), end_time = datetime(MAXYEAR,12,31)):):
+  def generateSpanningEvents(self, user_id, location_block_list, start_time = datetime(1900,1,1), end_time = datetime(MAXYEAR,12,31)):
     for loc in location_block_list:
         location_history = Utils.query("""SELECT * FROM Locations l JOIN Users_Locations ul ON l.location_id = ul.location_id WHERE ul.user_id = %s AND l.location_id = %s AND time BETWEEN %s AND %s ORDER BY ul.time""", (user_id, loc.location_id, start_time, end_time))
         min_time_between = ()
