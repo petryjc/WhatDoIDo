@@ -218,8 +218,8 @@ class TestScript:
 
 	def add(self,place,time):
 		print(place)
-		#if (place != -1):
-		#	Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time) VALUES(%s, %s, %s)""", (str(self.user_id), str(place), time))
+		if (place != -1):
+			Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time) VALUES(%s, %s, %s)""", (str(self.user_id), str(place), time))
 
 	def runScript(self):
 		self.initUser()
