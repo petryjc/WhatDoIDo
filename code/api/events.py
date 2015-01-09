@@ -108,6 +108,8 @@ class Event(object):
       min_time_between = timedelta.max
       max_time_between = timedelta.min
       for i in range(len(location_block_list)-1):
+        #TODO: Partition by locations.
+        #TODO: Add to the database!
         time_between = location_block_list[i+1].start_time - location_block_list[i].end_time
         if time_between < min_time_between:
           min_time_between = time_between
