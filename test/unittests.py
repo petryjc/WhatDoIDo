@@ -41,8 +41,7 @@ class Test(unittest.TestCase):
     
     self.loginCommand = json.JSONEncoder().encode({
       "username"  : self.username,
-      "password"  : self.password,
-      "device_id" : self.device_id
+      "password"  : self.password
     })
     self.loginResult = json.loads(callPostCommand(self.loginCommand, 'api/login'))
 
@@ -125,6 +124,21 @@ class Test(unittest.TestCase):
     
   def test_suggestion_single(self):
     self.assertTrue( callPostCommand("", 'api/suggestion/single'))
+
+  def test_calendar(self):
+    self.loginCommand = json.JSONEncoder().encode({
+      "username"  : "CyclesTest2",
+      "password"  : "testing"
+    })
+    login = json.loads(callPostCommand(self.loginCommand, 'api/login'))
+    print login 
+    command = json.JSONEncoder().encode({
+      "token" : login["token"],
+      "beginning" : "12-01-2014",
+      "ending" : "12-31-2014"
+    })
+    result = json.loads(callPostCommand(command, 'api/suggestion/calendar'))
+    print result
 
   def tearDown(self):
     deleteAccountCommand = json.JSONEncoder().encode({
