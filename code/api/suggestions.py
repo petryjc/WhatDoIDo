@@ -53,12 +53,13 @@ class Suggestion(object):
           for occurance in json.loads(event["occurances"]):
             if occurance[0] > dayStartSeconds and occurance[0] < dayEndSeconds:
               calendar.append({
-                "title" : event["name"],
+                "name" : event["name"],
                 "location" : event["address"],
-                "justification" : event["event_id"],
+                "event_id" : event["event_id"],
+                "event_type" : "cycle",
                 "beginning" : (day + timedelta(seconds=occurance[0] - dayStartSeconds)).isoformat(),
                 "ending" : (day + timedelta(seconds=occurance[1] - dayStartSeconds)).isoformat()
               })
 
-    return json.JSONEncoder().encode(calendar)
+    return json.JSONEncoder().encode({"calendar":calendar,"status":Utils.status(0,"OK")})
 

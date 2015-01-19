@@ -10,12 +10,14 @@ from json import *
 sys.path.insert(0, '../code')
 sys.path.insert(0, '../code/api')
 from utils import Utils
+from timeutils import Day, Week, Month
+from datetime import *
 from events import Event
 import urllib2
 
 def callPostCommand(command, location):
   #url = "http://" + platform.node() + ".wlan.rose-hulman.edu/" + location
-  url = "http://localhost/" + location
+  url = "http://localhost:8080/" + location
   #url = "http://summary.pneumaticsystem.com/" + location
   headers = {"Content-Type" : 'application/json'}
   req = urllib2.Request(url, command, headers)
@@ -23,6 +25,17 @@ def callPostCommand(command, location):
   
   the_page = response.read()
   return the_page
+  
+
+def add_data(o):
+  location_id = Utils.execute_id("""INSERT INTO Locations(address) VALUES('The place I am')""",())
+  event_id = Utils.execute_id("""
+  SELECT @UserID := user_id FROM User_Sessions WHERE session_token = %s;
+  INSERT INTO Cyclical_Events(user_id,name,location_id,cycle_type,occurances,locked,deleted) 
+  VALUES (@UserID,'test cycle',%s,'weekly',%s,TRUE,FALSE);
+  """, (o.loginResult['token'],location_id,json.JSONEncoder().encode([(1000,2000),(10000,10060)])))
+  return {"location_id" : location_id, "event_id" : event_id }
+    
   
 class Test(unittest.TestCase):
 
@@ -126,20 +139,108 @@ class Test(unittest.TestCase):
     self.assertTrue( callPostCommand("", 'api/suggestion/single'))
 
   def test_calendar(self):
-    self.loginCommand = json.JSONEncoder().encode({
-      "username"  : "CyclesTest2",
-      "password"  : "testing"
-    })
-    login = json.loads(callPostCommand(self.loginCommand, 'api/login'))
-    print login 
+    data = add_data(self)
+     
     command = json.JSONEncoder().encode({
-      "token" : login["token"],
+      "token" : self.loginResult["token"],
       "beginning" : "12-01-2014",
       "ending" : "12-31-2014"
     })
     result = json.loads(callPostCommand(command, 'api/suggestion/calendar'))
-    print result
-
+    self.assertEqual(result['status']['code'],0)
+    self.assertEqual(len(result['calendar']),10)
+    self.assertEqual(result['calendar'][0]["name"],"test cycle")
+    
+  def test_event_list(self):
+    data = add_data(self)
+    
+    command = json.JSONEncoder().encode({
+      "token" : self.loginResult['token']
+    })  
+    result = json.loads(callPostCommand(command, 'api/event/list'))
+    self.assertEqual(result['status']['code'],0)
+    self.assertEqual(len(result['events']),1)
+    self.assertEqual(result['events'][0]['event_id'],data["event_id"])
+    self.assertEqual(result['events'][0]['deleted'], False)
+    self.assertEqual(result['events'][0]['locked'], True)
+    self.assertEqual(result['events'][0]['event_type'], 'cycle')
+    self.assertEqual(result['events'][0]['cycle_type'], 'weekly')
+    self.assertEqual(result['events'][0]['address'], 'The place I am')
+    self.assertEqual(result['events'][0]['name'], 'test cycle')
+    self.assertEqual(len(result['events'][0]['occurances']), 2)
+    self.assertEqual(len(result['events'][0]['occurances'][0]), 2)
+    
+  def test_event_get(self):
+    data = add_data(self)
+    
+    command = json.JSONEncoder().encode({
+      "token"      : self.loginResult['token'],
+      "event_id"   : data["event_id"],
+      "event_type" : "cycle"
+    })  
+    result = json.loads(callPostCommand(command, 'api/event/get'))
+    self.assertEqual(result['status']['code'],0)
+    self.assertEqual(result['event_id'],data["event_id"])
+    self.assertEqual(result['deleted'], False)
+    self.assertEqual(result['locked'], True)
+    self.assertEqual(result['event_type'], 'cycle')
+    self.assertEqual(result['cycle_type'], 'weekly')
+    self.assertEqual(result['address'], 'The place I am')
+    self.assertEqual(result['name'], 'test cycle')
+    self.assertEqual(len(result['occurances']), 2)
+    self.assertEqual(len(result['occurances'][0]), 2)
+    
+    
+  def test_event_update(self):
+    
+    data = add_data(self)
+    
+    command1 = json.JSONEncoder().encode({
+      "token" : self.loginResult['token'],
+      "event_id" : data["event_id"],
+      "event_type" : "cycle",
+      "locked" : 0,
+      "deleted" : 1,
+      "name" : "This is a new name",
+      "occurances" : [("Monday 12:30","Monday 14:00"),("Saturday 3:00","Saturday 7:00")],
+      "cycle_type" : "weekly"
+    })  
+    
+    result1 = json.loads(callPostCommand(command1, 'api/event/update'))
+    self.assertEqual(result1['status']['code'],0)
+    
+    command = json.JSONEncoder().encode({
+      "token" : self.loginResult['token']
+    })  
+    result = json.loads(callPostCommand(command, 'api/event/list'))
+    self.assertEqual(result['status']['code'],0)
+    self.assertEqual(len(result['events']),1)
+    self.assertEqual(result['events'][0]['event_id'],data["event_id"])
+    self.assertEqual(result['events'][0]['deleted'], True)
+    self.assertEqual(result['events'][0]['locked'], False)
+    self.assertEqual(result['events'][0]['event_type'], 'cycle')
+    self.assertEqual(result['events'][0]['cycle_type'], 'weekly')
+    self.assertEqual(result['events'][0]['address'], 'The place I am')
+    self.assertEqual(result['events'][0]['name'], 'This is a new name')
+    self.assertEqual(result['events'][0]['occurances'], [["Monday 12:30","Monday 14:00"],["Saturday 3:00","Saturday 7:00"]])
+    
+  def test_timeutils(self):
+    t1 = datetime.now()
+    s1 = Day.seconds(t1)
+    t1p = Day.time(s1)
+    s11 = Day.time_to_seconds(t1p)
+    self.assertTrue(abs(s11-s1) < 60)
+    
+    s2 = Week.seconds(t1)
+    t2p = Week.time(s2)
+    s21 = Week.time_to_seconds(t2p)
+    self.assertTrue(abs(s21-s2) < 60)
+    
+    s3 =  Month.seconds(t1)
+    t3p = Month.time(s3)
+    s31 = Month.time_to_seconds(t3p)
+    self.assertTrue(abs(s31-s3) < 60)
+    
   def tearDown(self):
     deleteAccountCommand = json.JSONEncoder().encode({
       "username" : self.username,
