@@ -24,9 +24,128 @@ class Event(object):
     return "Event"
 
   @cherrypy.expose
+  def get(self):
+    body = json.JSONDecoder().decode( cherrypy.request.body.read() )
+
+    check = Utils.arg_check(body, ["token","event_id","event_type"])
+    if (check[0]):
+        return check[1]
+    if body.get( "token", None ) is None:
+        return json.JSONEncoder().encode( Utils.status_more( 10, "No session token present" ) )
+
+     # Find the user ID of the person making the request.
+    user_check = Utils.validate_user(body["token"])
+    if(user_check[0]):
+      return user_check[1]
+    user_id = user_check[1]
+
+    if body["event_type"] == "cycle":
+      results = Utils.query(
+              """ SELECT event_id, name, address, cycle_type, occurances, locked, deleted 
+                  FROM Cyclical_Events c JOIN Locations l ON c.location_id = l.location_id
+                  WHERE user_id = %s AND event_id = %s;
+              """,
+              (user_id,body["event_id"]))
+
+              
+      type_to_class = {"daily":Day,"weekly":Week,"monthly":Month}
+      if len(results) == 1:
+        res = results[0]
+        cycle_class = type_to_class[res["cycle_type"]]
+        res["occurances"] = [(cycle_class.time(x[0]),cycle_class.time(x[1])) for x in json.JSONDecoder().decode(res["occurances"])]        
+        res["event_type"] = 'cycle'
+        res.update( Utils.status_more( 0, "OK" ) )
+        return json.JSONEncoder().encode( res )
+      else:
+        return json.JSONEncoder().encode( Utils.status_more( 111, "Could not locate event" ) )
+    return json.JSONEncoder().encode( Utils.status_more( 111, "Event type {0} not available".format(body["event_type"]) ) )
+    
+  @cherrypy.expose
   def list(self):
-    #TODO
-    return "List (TODO)"
+    body = json.JSONDecoder().decode( cherrypy.request.body.read() )
+
+    check = Utils.arg_check(body, ["token"])
+    if (check[0]):
+        return check[1]
+    if body.get( "token", None ) is None:
+        return json.JSONEncoder().encode( Utils.status_more( 10, "No session token present" ) )
+
+     # Find the user ID of the person making the request.
+    user_check = Utils.validate_user(body["token"])
+    if(user_check[0]):
+      return user_check[1]
+    user_id = user_check[1]
+
+    results = Utils.query(
+            """ SELECT event_id, name, address, cycle_type, occurances, locked, deleted 
+                FROM Cyclical_Events c JOIN Locations l ON c.location_id = l.location_id
+                WHERE user_id = %s;
+            """,
+            user_id )
+
+            
+    type_to_class = {"daily":Day,"weekly":Week,"monthly":Month}
+    if results:
+      for row in results:
+        cycle_class = type_to_class[row["cycle_type"]]
+        row["occurances"] = [(cycle_class.time(x[0]),cycle_class.time(x[1])) for x in json.JSONDecoder().decode(row["occurances"])]        
+        row["event_type"] = 'cycle'
+        
+    ret = {
+            "events" : results
+            }
+    ret.update( Utils.status_more( 0, "OK" ) )
+
+    return json.JSONEncoder().encode( ret )
+    
+  @cherrypy.expose
+  def update(self):
+    body = json.JSONDecoder().decode( cherrypy.request.body.read() )
+
+    check = Utils.arg_check(body, ["token","event_id","event_type","locked","deleted","name"])
+    if (check[0]):
+        return check[1]
+    if body.get( "token", None ) is None:
+        return json.JSONEncoder().encode( Utils.status_more( 10, "No session token present" ) )
+
+     # Find the user ID of the person making the request.
+    user_check = Utils.validate_user(body["token"])
+    if(user_check[0]):
+      return user_check[1]
+    user_id = user_check[1]
+
+    
+    if body["event_type"] == "cycle":
+      #extra parameters required for cyclical events
+      check = Utils.arg_check(body, ["occurances","cycle_type"])
+      if (check[0]):
+        return check[1]
+        
+      event_user_id = Utils.query(""" SELECT user_id FROM Cyclical_Events WHERE event_id = %s;""", body["event_id"] )[0]["user_id"]
+      
+      if user_id != event_user_id:
+        return json.JSONEncoder().encode( Utils.status_more( 100, "Permission Denied" ) )
+              
+      type_to_class = {"daily":Day,"weekly":Week,"monthly":Month}
+      cycle_class = type_to_class[body["cycle_type"]]
+      occurances = [(cycle_class.time_to_seconds(x[0]),cycle_class.time_to_seconds(x[1])) for x in body["occurances"]]        
+          
+      try:
+        Utils.execute("""UPDATE Cyclical_Events 
+                         SET locked = %s ,
+                             deleted = %s,
+                             name = %s,
+                             occurances = %s,
+                             cycle_type = %s
+                         WHERE event_id = %s""",
+         (body["locked"],body["deleted"],body["name"],json.JSONEncoder().encode(occurances),body["cycle_type"],body["event_id"]))
+      except Exception:
+        return json.JSONEncoder().encode({"status": Utils.status(3981,"Could not update event")})
+
+      return json.JSONEncoder().encode(Utils.status_more(0, "OK"))
+      
+    return json.JSONEncoder().encode(Utils.status_more(333, "Unidentified event type"))
+
 
   def generateCyclicalEvents(self, user_id, start_time = datetime(1900,1,1), end_time = datetime(MAXYEAR,12,31)):
     #Utils.execute("DELETE FROM Cyclical_Events WHERE user_id = %s", (user_id)) #remove previous eyclical events
