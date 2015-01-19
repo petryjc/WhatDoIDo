@@ -105,21 +105,36 @@ class Event(object):
     return location_block_list
 
   def generateSpanningEvents(self, user_id, location_block_list, start_time = datetime(1900,1,1), end_time = datetime(MAXYEAR,12,31)):
+    parts = partition(location_blocks, "location_id")
+    for loc_id in parts:
+      block_list = parts[loc_id]
       min_time_between = timedelta.max
       max_time_between = timedelta.min
-      for i in range(len(location_block_list)-1):
-        #TODO: Partition by locations.
-        #TODO: Add to the database!
-        time_between = location_block_list[i+1].start_time - location_block_list[i].end_time
+      min_length = timedelta.max
+      max_length = timedelta.min
+      for i in range(len(block_list)-1):
+        length = block_list[i].end_time - block_list[i].start_time
+        time_between = block_list[i+1].start_time - block_list[i].end_time
         if time_between < min_time_between:
           min_time_between = time_between
         if time_between > max_time_between:
           max_time_between = time_between
-      range_median_time = (max_time_between + min_time_between)/2
-      print range_median_time
-      print min_time_between
-      print max_time_between
+        if length < min_length:
+          min_length = length
+        if length > max_length:
+          max_length = length
+      time_between_range = max_time_between-min_time_between
+      avg_length = (min_length + max_length)/2
+      storeSpanningEvent(user_id, loc_id, block_list[0].address, min_time_between, time_between_range, avg_length)
 
-
-
-
+  def storeSpanningEvent(user_id, loc_id, address, min_time_between, time_between_range, avg_length):
+    old_event_at_location = Utils.query("""SELECT * FROM Events WHERE user_id = %s AND location_id = %s""", (user_id, loc_id))
+    if old_event_at_location == ():
+      (spanning_event_id) = Utils.query("""SELECT event_type_id FROM Event_Types WHERE name LIKE 'spanning%' """,())
+      new_entry_id = Utils.execute_id("""INSERT INTO Events (event_type_id, user_id, location_id, name, locked, deleted) VALUE (%s,%s,%s,%s,%s,%s)""",
+                        (user_id,spanning_event_id,loc_id,address,0,0))
+      Utils.execute("""INSERT INTO Spanning_Events (event_id,min_time_between,time_between_range,avg_length) VALUE (%s,%s,%s,%s)""",
+            (new_entry_id, min_time_between,time_between_range,avg_length))
+    elif old_event_at_location[5] != 1: # If the event is not locked
+      Utils.execute("""UPDATE Spanning_Events SET min_time_between = %s, time_between_range = %s, avg_length = %s WHERE event_id = %s""",
+            (min_time_between, time_between_range, avg_length, old_event_at_location[0]))
