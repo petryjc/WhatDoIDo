@@ -249,9 +249,8 @@ class Event(object):
   def storeSpanningEvent(user_id, loc_id, address, min_time_between, time_between_range, avg_length):
     old_event_at_location = Utils.query("""SELECT * FROM Events WHERE user_id = %s AND location_id = %s""", (user_id, loc_id))
     if old_event_at_location == ():
-      (spanning_event_id) = Utils.query("""SELECT event_type_id FROM Event_Types WHERE name LIKE 'spanning%' """,())
-      new_entry_id = Utils.execute_id("""INSERT INTO Events (event_type_id, user_id, location_id, name, locked, deleted) VALUE (%s,%s,%s,%s,%s,%s)""",
-                        (user_id,spanning_event_id,loc_id,address,0,0))
+      new_entry_id = Utils.execute_id("""INSERT INTO Events (event_type, user_id, location_id, name, locked, deleted) VALUE (%s,%s,%s,%s,%s,%s)""",
+                        ('spanning',user_id,loc_id,address,0,0))
       Utils.execute("""INSERT INTO Spanning_Events (event_id,min_time_between,time_between_range,avg_length) VALUE (%s,%s,%s,%s)""",
             (new_entry_id, min_time_between,time_between_range,avg_length))
     elif old_event_at_location[5] != 1: # If the event is not locked
