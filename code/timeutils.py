@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, date, time, MINYEAR, MAXYEAR
+import re
 
 class Day:
   MINIMUM_EVENT_ATTENDANCE = 0.8
@@ -10,8 +11,15 @@ class Day:
 
   @staticmethod
   def time(seconds):
-    return str(int(seconds/3600)) + ":" + str(int(seconds%3600/60))
-
+    return "{0}:{1:02d}".format(int(seconds/3600), int(seconds%3600/60))
+    
+  @staticmethod
+  def time_to_seconds(time):
+    m = re.match(r'(\d*):(\d*)',time)
+    hours = int(m.group(1))
+    minutes = int(m.group(2))
+    return hours * 3600 + minutes * 60
+  
   @staticmethod
   def occurance_rate(cluster, startDate, endDate):
     daygenerator = (startDate + timedelta(x) for x in xrange((endDate - startDate).days))
@@ -21,15 +29,24 @@ class Week:
   MINIMUM_EVENT_ATTENDANCE = 0.8
   MINIMUM_OCCURANCES = 2
   NAME = "weekly"
+  days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+  
   @staticmethod
   def seconds(t):
     return t.weekday()*86400 + (t - datetime.combine(t,time(0))).total_seconds()
 
   @staticmethod
   def time(seconds):
-    days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-    return days[int(seconds/86400)] + " " + str(int(seconds%86400/3600)) + ":" + str(int(seconds%86400%3600/60))
+    return "{0} {1}:{2:02d}".format(Week.days[int(seconds/86400)],int(seconds%86400/3600),int(seconds%86400%3600/60))
 
+  @staticmethod
+  def time_to_seconds(time):
+    m = re.match(r'(.*) (\d*):(\d*)',time)
+    day = m.group(1)
+    hours = int(m.group(2))
+    minutes = int(m.group(3))
+    return Week.days.index(day)*86400 + hours*3600 + minutes*60
+    
   @staticmethod
   def occurance_rate(cluster, startDate, endDate):
     daygenerator = (startDate + timedelta(x) for x in xrange((endDate - startDate).days))
@@ -45,8 +62,16 @@ class Month:
 
   @staticmethod
   def time(seconds):
-    return str(int(seconds/86400)) + " " + str(int(seconds%86400/3600)) + ":" + str(int(seconds%86400%3600/60))
+    return "{0} {1}:{2:02d}".format(int(seconds/86400), int(seconds%86400/3600),int(seconds%86400%3600/60))
 
+  @staticmethod
+  def time_to_seconds(time):
+    m = re.match(r'(\d*) (\d*):(\d*)',time)
+    days = int(m.group(1))
+    hours = int(m.group(2))
+    minutes = int(m.group(3))
+    return days*86400 + hours*3600 + minutes*60
+  
   @staticmethod
   def occurance_rate(cluster, startDate, endDate):
     daygenerator = (startDate + timedelta(x) for x in xrange((endDate - startDate).days))

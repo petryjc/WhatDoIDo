@@ -6,7 +6,7 @@ import traceback
 class Utils:
   @staticmethod
   def database():
-    return MySQLdb.connect( host="localhost", user="root", passwd="fee9duX3", db="WhatDoIDo", cursorclass=MySQLdb.cursors.DictCursor )
+    return MySQLdb.connect( host="localhost", user="root", passwd="Todaytoday0", db="WhatDoIDo", cursorclass=MySQLdb.cursors.DictCursor )
 
   @staticmethod
   def query(q, p):

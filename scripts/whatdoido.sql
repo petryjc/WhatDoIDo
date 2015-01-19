@@ -56,11 +56,5 @@ CREATE TABLE Cyclical_Events
 INSERT INTO `Users` (`user_id`, `username`, `email`, `password`, `salt`) 
 VALUES ('1', 'mobile', 'mobile@summary.com', SHA1(CONCAT('mobile', 'bec7f06710081143365387b79aeb59ad')), 'bec7f06710081143365387b79aeb59ad');
 
-GRANT USAGE ON Summary.* TO 'sql_user'@'localhost';
-DROP USER 'sql_user'@'localhost';
-FLUSH PRIVILEGES;
-CREATE USER 'sql_user'@'localhost' IDENTIFIED BY 'sql_user_password';
-GRANT ALL PRIVILEGES ON Summary.* TO 'sql_user'@'localhost' WITH GRANT OPTION;
-FLUSH PRIVILEGES;
 
 
