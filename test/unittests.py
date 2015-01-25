@@ -33,7 +33,7 @@ def add_data(o):
   ("""
   SELECT @UserID := user_id FROM User_Sessions WHERE session_token = %s;
   INSERT INTO Events(event_type, user_id, location_id, name, locked, deleted)
-  VALUES ('cycle', @UserID, %s, 'test cycle', TRUE, FALSE);""", (o.loginResult['token'], location_id))
+  VALUES ('cycle', @UserID, %s, 'test cycle', TRUE, FALSE);""", (o, location_id))
 
   Utils.execute("""
   INSERT INTO Cyclical_Events(event_id,cycle_type,occurances) 
