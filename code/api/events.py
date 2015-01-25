@@ -41,14 +41,15 @@ class Event(object):
 
     if body["event_type"] == "cycle":
       results = Utils.query(
-              """ SELECT event_id, name, address, cycle_type, occurances, locked, deleted 
-                  FROM Cyclical_Events c JOIN Locations l ON c.location_id = l.location_id
-                  WHERE user_id = %s AND event_id = %s;
+              """ SELECT ce.event_id, name, address, cycle_type, occurances, locked, deleted 
+                  FROM (Events e JOIN Cyclical_Events ce ON e.event_id = ce.event_id)  
+                  JOIN Locations l ON e.location_id = l.location_id
+                  WHERE user_id = %s AND ce.event_id = %s;
               """,
               (user_id,body["event_id"]))
-
-              
+            
       type_to_class = {"daily":Day,"weekly":Week,"monthly":Month}
+      
       if len(results) == 1:
         res = results[0]
         cycle_class = type_to_class[res["cycle_type"]]
@@ -58,6 +59,23 @@ class Event(object):
         return json.JSONEncoder().encode( res )
       else:
         return json.JSONEncoder().encode( Utils.status_more( 111, "Could not locate event" ) )
+    
+    elif body["event_type"] == "spanning":
+        results = Utils.query(
+              """ SELECT se.event_id, name, address, min_time_between, range_of_span, avg_length_of_event, locked, deleted 
+                  FROM (Events e JOIN Spanning_Events se ON e.event_id = se.event_id)  
+                  JOIN Locations l ON e.location_id = l.location_id
+                  WHERE user_id = %s AND se.event_id = %s;
+              """,
+              (user_id,body["event_id"]))
+      if len(results) == 1:
+        res = results[0]        
+        res["event_type"] = 'spanning'
+        res.update( Utils.status_more( 0, "OK" ) )
+        return json.JSONEncoder().encode( res )
+      else:
+        return json.JSONEncoder().encode( Utils.status_more( 111, "Could not locate event" ) )
+
     return json.JSONEncoder().encode( Utils.status_more( 111, "Event type {0} not available".format(body["event_type"]) ) )
     
   @cherrypy.expose
@@ -77,14 +95,23 @@ class Event(object):
     user_id = user_check[1]
 
     results = Utils.query(
-            """ SELECT event_id, name, address, cycle_type, occurances, locked, deleted 
-                FROM Cyclical_Events c JOIN Locations l ON c.location_id = l.location_id
-                WHERE user_id = %s;
-            """,
-            user_id )
+              """ SELECT ce.event_id, name, address, cycle_type, occurances, locked, deleted 
+                  FROM (Events e JOIN Cyclical_Events ce ON e.event_id = ce.event_id)  
+                  JOIN Locations l ON e.location_id = l.location_id
+                  WHERE user_id = %s;
+              """,
+              (user_id))
 
+    result.extend (
+            Utils.query(
+                    """ SELECT se.event_id, name, address, cycle_type, occurances, locked, deleted 
+                        FROM (Events e JOIN Spanning_Events se ON e.event_id = se.event_id)  
+                        JOIN Locations l ON e.location_id = l.location_id
+                        WHERE user_id = %s;
+                    """, (user_id)))  
             
     type_to_class = {"daily":Day,"weekly":Week,"monthly":Month}
+    
     if results:
       for row in results:
         cycle_class = type_to_class[row["cycle_type"]]
@@ -121,7 +148,7 @@ class Event(object):
       if (check[0]):
         return check[1]
         
-      event_user_id = Utils.query(""" SELECT user_id FROM Cyclical_Events WHERE event_id = %s;""", body["event_id"] )[0]["user_id"]
+      event_user_id = Utils.query(""" SELECT user_id FROM Events WHERE event_id = %s;""", body["event_id"] )[0]["user_id"]
       
       if user_id != event_user_id:
         return json.JSONEncoder().encode( Utils.status_more( 100, "Permission Denied" ) )
@@ -131,19 +158,48 @@ class Event(object):
       occurances = [(cycle_class.time_to_seconds(x[0]),cycle_class.time_to_seconds(x[1])) for x in body["occurances"]]        
           
       try:
-        Utils.execute("""UPDATE Cyclical_Events 
+        Utils.execute("""UPDATE Events 
                          SET locked = %s ,
                              deleted = %s,
-                             name = %s,
-                             occurances = %s,
-                             cycle_type = %s
+                             name = %s
                          WHERE event_id = %s""",
-         (body["locked"],body["deleted"],body["name"],json.JSONEncoder().encode(occurances),body["cycle_type"],body["event_id"]))
+         (body["locked"],body["deleted"],body["name"],body["event_id"]))
+        Utils.execute("""UPDATE Cyclical_Events
+                         SET occurances = %s,
+                             cycle_type = %s
+                         WHERE event_id = %s""", (json.JSONEncoder().encode(occurances),body["cycle_type"],body["event_id"]))
       except Exception:
         return json.JSONEncoder().encode({"status": Utils.status(3981,"Could not update event")})
 
       return json.JSONEncoder().encode(Utils.status_more(0, "OK"))
+    
+    elif body["event_type"] == "spanning":
+      check = Utils.arg_check(body, ["min_time_between", "range_of_span", "avg_length_of_event"])
+      if (check[0]):
+        return check[1]
+
+      event_user_id = Utils.query(""" SELECT user_id FROM Events WHERE event_id = %s;""", body["event_id"] )[0]["user_id"]
       
+      if user_id != event_user_id:
+        return json.JSONEncoder().encode( Utils.status_more( 100, "Permission Denied" ))
+
+      try:
+        Utils.execute("""UPDATE Events 
+                 SET locked = %s ,
+                     deleted = %s,
+                     name = %s
+                 WHERE event_id = %s""",
+        (body["locked"],body["deleted"],body["name"],body["event_id"]))
+        Utils.execute("""UPDATE Spanning_Events
+                          SET min_time_between = %s,
+                              range_of_span = %s,
+                              avg_length_of_event = %s
+                          WHERE event_id = %s""",(body["min_time_between"],body["range_of_span"],body["avg_length_of_event"],body["event_id"]))
+      except Exception:
+        return json.JSONEncoder().encode({"status": Utils.status(3981,"Could not update event")})
+
+      return json.JSONEncoder().encode(Utils.status_more(0, "OK"))
+
     return json.JSONEncoder().encode(Utils.status_more(333, "Unidentified event type"))
 
 
@@ -173,7 +229,7 @@ class Event(object):
     for location_block_list in parts.values():
       loc = location_block_list[0]
       for sorter in [Day, Week, Month]:
-        if (len(location_block_list) >= 3): #it takes at least 3 occurences to show signs of a cycle
+        if (len(location_block_list) >= 3): #it takes at least 3 occurances to show signs of a cycle
           lbl = [(x, sorter.seconds(x.start_time), sorter.seconds(x.end_time)) for x in location_block_list]
           sorted_on_time = sorted(lbl, key = lambda x: x[1])
           clusters = []
