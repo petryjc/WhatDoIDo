@@ -39,7 +39,6 @@ def add_data(o):
                                 (user_id[0]["user_id"],location_id,json.JSONEncoder().encode([(1000,2000),(10000,10060)])))
   print "USER ID" + str(user_id[0]["user_id"])
   print "EVENT ID" + str(event_id)
-  
   return {"location_id" : location_id, "event_id" : event_id }
     
   
