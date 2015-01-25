@@ -68,13 +68,13 @@ class Event(object):
                   WHERE user_id = %s AND se.event_id = %s;
               """,
               (user_id,body["event_id"]))
-      if len(results) == 1:
-        res = results[0]        
-        res["event_type"] = 'spanning'
-        res.update( Utils.status_more( 0, "OK" ) )
-        return json.JSONEncoder().encode( res )
-      else:
-        return json.JSONEncoder().encode( Utils.status_more( 111, "Could not locate event" ) )
+	if len(results) == 1:
+		res = results[0]        
+		res["event_type"] = 'spanning'
+		res.update( Utils.status_more( 0, "OK" ) )
+        	return json.JSONEncoder().encode( res )
+      	else:
+        	return json.JSONEncoder().encode( Utils.status_more( 111, "Could not locate event" ) )
 
     return json.JSONEncoder().encode( Utils.status_more( 111, "Event type {0} not available".format(body["event_type"]) ) )
     

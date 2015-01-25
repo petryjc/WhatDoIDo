@@ -54,7 +54,7 @@ class Location(object):
 						isRoute = TRUE
 					Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time, isRoute) 
 							VALUES(%s, %s, %s, %s)""",
-							(user_id, location_id, datetime.now(), isRoute)
+							(user_id, location_id, datetime.now(), isRoute))
 					return json.JSONEncoder().encode( Utils.status_more( 0, "OK" ) )
 			return json.JSONEncoder().encode( Utils.status_more( 35, "Could not save to database" ) )
 
