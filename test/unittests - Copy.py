@@ -28,17 +28,12 @@ def callPostCommand(command, location):
   
 
 def add_data(o):
-  location_id = Utils.execute_id("""INSERT INTO Locations(address) VALUES('The place I am')""",())
-  user_id = Utils.query("""SELECT user_id 
-                            FROM User_Sessions 
-                            WHERE session_token = %s;""", (o.loginResult['token']))
-  
-  event_id= Utils.execute_id("""INSERT INTO Events(event_type,user_id,name,location_id,locked,deleted) 
-                                VALUES ('cycle',%s,'test cycle',%s,TRUE,FALSE);""", 
-                                (user_id[0]["user_id"], location_id))
-  
-  Utils.execute("""INSERT INTO Cyclical_Events(event_id, cycle_type, occurances)
-                          VALUES(%s,'weekly',%s)""", (event_id, json.JSONEncoder().encode([(1000,2000),(10000,10060)])))
+  location_id = Utils.execute_id("INSERT INTO Locations(address) VALUES('The place I am')",())
+  event_id = Utils.execute_id ("SELECT @UserID := user_id FROM User_Sessions WHERE session_token = %s;INSERT INTO Events(event_type, user_id, location_id, name, locked, deleted) VALUES ('cycle', @UserID, %s, 'test cycle', TRUE, FALSE);", (o.loginResult['token'], location_id))
+
+  Utils.execute("""
+  INSERT INTO Cyclical_Events(event_id,cycle_type,occurances) 
+  VALUES (%s,'weekly',%s);""", (event_id,location_id,json.JSONEncoder().encode([(1000,2000),(10000,10060)])))
 
   return {"location_id" : location_id, "event_id" : event_id }
     
