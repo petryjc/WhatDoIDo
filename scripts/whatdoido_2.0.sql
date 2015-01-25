@@ -72,5 +72,7 @@ CREATE TABLE Spanning_Events
     CONSTRAINT FOREIGN KEY (event_id) REFERENCES Events(event_id) ON DELETE CASCADE
 );
 
+
+
 INSERT INTO `Users` (`user_id`, `username`, `emquitail`, `password`, `salt`) 
 VALUES ('1', 'mobile', 'mobile@summary.com', SHA1(CONCAT('mobile', 'bec7f06710081143365387b79aeb59ad')), 'bec7f06710081143365387b79aeb59ad');

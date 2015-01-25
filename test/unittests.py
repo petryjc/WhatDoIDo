@@ -37,7 +37,7 @@ def add_data(o):
 
   Utils.execute("""
   INSERT INTO Cyclical_Events(event_id,cycle_type,occurances) 
-  VALUES (%s,'weekly',%s);""", (event_id,location_id,json.JSONEncoder().encode([(1000,2000),(10000,10060)])))
+  VALUES (%s,'weekly',%s);""", (event_id, json.JSONEncoder().encode([(1000,2000),(10000,10060)])))
 
   return {"location_id" : location_id, "event_id" : event_id }
     
