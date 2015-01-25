@@ -29,11 +29,17 @@ def callPostCommand(command, location):
 
 def add_data(o):
   location_id = Utils.execute_id("""INSERT INTO Locations(address) VALUES('The place I am')""",())
-  event_id = Utils.execute_id("""
-  SELECT @UserID := user_id FROM User_Sessions WHERE session_token = %s;
-  INSERT INTO Cyclical_Events(user_id,name,location_id,cycle_type,occurances,locked,deleted) 
-  VALUES (@UserID,'test cycle',%s,'weekly',%s,TRUE,FALSE);
-  """, (o.loginResult['token'],location_id,json.JSONEncoder().encode([(1000,2000),(10000,10060)])))
+  user_id = Utils.query("""SELECT user_id 
+                            FROM User_Sessions 
+                            WHERE session_token = %s;""", (o.loginResult['token']))
+  
+  event_id= Utils.execute_id("""INSERT INTO Cyclical_Events(user_id,name,location_id,
+                                            cycle_type,occurances,locked,deleted) 
+                                VALUES (%s,'test cycle',%s,'weekly',%s,TRUE,FALSE);""", 
+                                (user_id[0]["user_id"],location_id,json.JSONEncoder().encode([(1000,2000),(10000,10060)])))
+  print user_id
+  print event_id
+  
   return {"location_id" : location_id, "event_id" : event_id }
     
   
