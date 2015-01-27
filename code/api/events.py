@@ -85,10 +85,8 @@ class Event(object):
 
     check = Utils.arg_check(body, ["token"])
     if (check[0]):
-        print "GOT HERE 0"
         return check[1]
     if body.get( "token", None ) is None:
-        print "GOT HERE 1"
         return json.JSONEncoder().encode( Utils.status_more( 10, "No session token present" ) )
 
      # Find the user ID of the person making the request.
@@ -105,9 +103,7 @@ class Event(object):
               """,
               (user_id))
 
-    print results
-
-    result.extend (
+    results.extend (
             Utils.query(
                     """ SELECT se.event_id, name, address, cycle_type, occurances, locked, deleted 
                         FROM (Events e JOIN Spanning_Events se ON e.event_id = se.event_id)  
@@ -115,8 +111,6 @@ class Event(object):
                         WHERE user_id = %s;
                     """, (user_id)))
 
-    print results  
-            
     type_to_class = {"daily":Day,"weekly":Week,"monthly":Month}
     
     if results:
