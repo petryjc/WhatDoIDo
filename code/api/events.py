@@ -102,7 +102,8 @@ class Event(object):
                   WHERE user_id = %s;
               """,
               (user_id))
-
+    for t in results:
+      print t
     print results
 
     results.extend (
