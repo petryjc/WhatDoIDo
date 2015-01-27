@@ -103,6 +103,8 @@ class Event(object):
               """,
               (user_id))
 
+    print results
+
     results.extend (
             Utils.query(
                     """ SELECT se.event_id, name, address, cycle_type, occurances, locked, deleted 
