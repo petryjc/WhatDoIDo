@@ -102,13 +102,17 @@ class Event(object):
               """,
               (user_id))
 
+    print results
+
     result.extend (
             Utils.query(
                     """ SELECT se.event_id, name, address, cycle_type, occurances, locked, deleted 
                         FROM (Events e JOIN Spanning_Events se ON e.event_id = se.event_id)  
                         JOIN Locations l ON e.location_id = l.location_id
                         WHERE user_id = %s;
-                    """, (user_id)))  
+                    """, (user_id)))
+
+    print results  
             
     type_to_class = {"daily":Day,"weekly":Week,"monthly":Month}
     
