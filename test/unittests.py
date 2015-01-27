@@ -18,6 +18,7 @@ import urllib2
 def callPostCommand(command, location):
   #url = "http://" + platform.node() + ".wlan.rose-hulman.edu/" + location
   url = "http://localhost:8080/" + location
+  print url
   #url = "http://summary.pneumaticsystem.com/" + location
   headers = {"Content-Type" : 'application/json'}
   req = urllib2.Request(url, command, headers)
