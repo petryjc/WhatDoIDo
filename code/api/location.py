@@ -2,8 +2,7 @@ from utils import Utils
 import json
 import cherrypy
 import requests
-from datetime import *
-import datetime
+from datetime import datetime
 from math import *
 
 class Location(object):
@@ -52,9 +51,8 @@ class Location(object):
 													ORDER BY time DESC LIMIT 1""", (user_id))
 
 					isRoute = False
-					if datetime.now() - previousLocation[0]["time"] <= timedelta(minutes=10):
-						if len(previousLocation) == 1 and checkDistance(previousLocation[0]["latitude"], previousLocation[0]["longitude"],body["latitude"],body["longitude"]) == 1: 
-							isRoute = True
+					if len(previousLocation) == 1 and checkDistance(previousLocation[0]["latitude"], previousLocation[0]["longitude"],body["latitude"],body["longitude"]) == 1: 
+						isRoute = True
 					Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time, isRoute) 
 							VALUES(%s, %s, %s, %s)""",
 							(user_id, location_id, datetime.now(), isRoute))
