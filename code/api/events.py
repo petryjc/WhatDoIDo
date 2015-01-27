@@ -81,20 +81,24 @@ class Event(object):
   @cherrypy.expose
   def list(self):
     body = json.JSONDecoder().decode( cherrypy.request.body.read() )
+    print "GOT HERE"
 
     check = Utils.arg_check(body, ["token"])
     if (check[0]):
+        print "GOT HERE 0"
         return check[1]
     if body.get( "token", None ) is None:
+        print "GOT HERE 1"
         return json.JSONEncoder().encode( Utils.status_more( 10, "No session token present" ) )
 
      # Find the user ID of the person making the request.
     user_check = Utils.validate_user(body["token"])
     if(user_check[0]):
+      print "GOT HERE 2"
       return user_check[1]
     user_id = user_check[1]
 
-    print "GOT HERE"
+    print "GOT HERE 3"
 
     results = Utils.query(
               """ SELECT ce.event_id, name, address, cycle_type, occurances, locked, deleted 
