@@ -50,8 +50,8 @@ class Location(object):
 													WHERE user_id = %s AND TIMESTAMPDIFF(%s, time) < 10 
 													ORDER BY time desc LIMIT 1""")
 					isRoute = FALSE
-					if len(previousLocation) == 1 and checkDistance(previousLocation[0]["latitude"], previousLocation[0]["longitude"],body["latitude"],body["longitude"]) == 1: 
-						isRoute = TRUE
+					#if len(previousLocation) == 1 and checkDistance(previousLocation[0]["latitude"], previousLocation[0]["longitude"],body["latitude"],body["longitude"]) == 1: 
+					#	isRoute = TRUE
 					Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time, isRoute) 
 							VALUES(%s, %s, %s, %s)""",
 							(user_id, location_id, datetime.now(), isRoute))
