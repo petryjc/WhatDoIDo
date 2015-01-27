@@ -51,10 +51,10 @@ class Location(object):
 													WHERE user_id = %s 
 													ORDER BY time DESC LIMIT 1""", (user_id))
 
-					isRoute = FALSE
+					isRoute = False
 					if datetime.now() - previousLocation[0]["time"] <= timedelta(minutes=10):
 						if len(previousLocation) == 1 and checkDistance(previousLocation[0]["latitude"], previousLocation[0]["longitude"],body["latitude"],body["longitude"]) == 1: 
-							isRoute = TRUE
+							isRoute = True
 					Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time, isRoute) 
 							VALUES(%s, %s, %s, %s)""",
 							(user_id, location_id, datetime.now(), isRoute))
