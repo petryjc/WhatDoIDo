@@ -96,7 +96,7 @@ class Event(object):
     user_id = user_check[1]
 
     resultsCycle = list(Utils.query(
-              """ SELECT ce.event_id, name, address, cycle_type, occurances, locked, deleted 
+              """ SELECT ce.event_id, event_type, name, address, cycle_type, occurances, locked, deleted 
                   FROM (Events e JOIN Cyclical_Events ce ON e.event_id = ce.event_id)  
                   JOIN Locations l ON e.location_id = l.location_id
                   WHERE user_id = %s;
@@ -105,7 +105,7 @@ class Event(object):
  
     
     resultsSpanning = list(Utils.query(
-                    """ SELECT se.event_id, name, address, cycle_type, occurances, locked, deleted 
+                    """ SELECT se.event_id, event_type, name, address, min_time_between, range_of_span, avg_length_of_event, locked, deleted 
                         FROM (Events e JOIN Spanning_Events se ON e.event_id = se.event_id)  
                         JOIN Locations l ON e.location_id = l.location_id
                         WHERE user_id = %s;
@@ -119,9 +119,9 @@ class Event(object):
     
     if results:
       for row in results:
-        cycle_class = type_to_class[row["cycle_type"]]
-        row["occurances"] = [(cycle_class.time(x[0]),cycle_class.time(x[1])) for x in json.JSONDecoder().decode(row["occurances"])]        
-        row["event_type"] = 'cycle'
+        if row["event_type"] == "cycle"  
+          cycle_class = type_to_class[row["cycle_type"]]
+          row["occurances"] = [(cycle_class.time(x[0]),cycle_class.time(x[1])) for x in json.JSONDecoder().decode(row["occurances"])]
         
     ret = {
             "events" : results
@@ -172,7 +172,7 @@ class Event(object):
         Utils.execute("""UPDATE Cyclical_Events
                          SET occurances = %s,
                              cycle_type = %s
-                         WHERE event_id = %s""", (json.JSONEncoder().encode(occurances),body["cycle_type"],body["event_id"]))
+                         WHERE event_id = %s""", (json.JSONEncoder().encode(occurances),cycle_class,body["event_id"]))
       except Exception:
         return json.JSONEncoder().encode({"status": Utils.status(3981,"Could not update event")})
 
