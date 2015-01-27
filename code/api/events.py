@@ -95,24 +95,26 @@ class Event(object):
       return user_check[1]
     user_id = user_check[1]
 
-    results = Utils.query(
+    resultsCycle = list(Utils.query(
               """ SELECT ce.event_id, name, address, cycle_type, occurances, locked, deleted 
                   FROM (Events e JOIN Cyclical_Events ce ON e.event_id = ce.event_id)  
                   JOIN Locations l ON e.location_id = l.location_id
                   WHERE user_id = %s;
               """,
-              (user_id))
-    for t in results:
-      print t
-    print results
-
-    results.extend (
-            Utils.query(
+              (user_id)))
+ 
+    
+    resultsSpanning = 
+            list(Utils.query(
                     """ SELECT se.event_id, name, address, cycle_type, occurances, locked, deleted 
                         FROM (Events e JOIN Spanning_Events se ON e.event_id = se.event_id)  
                         JOIN Locations l ON e.location_id = l.location_id
                         WHERE user_id = %s;
                     """, (user_id)))
+
+    resultsCycle.extend(resultsSpanning)
+
+    results = resultsCycle
 
     type_to_class = {"daily":Day,"weekly":Week,"monthly":Month}
     
