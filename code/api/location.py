@@ -48,7 +48,7 @@ class Location(object):
 				if (location_id  != -1):
 					previousLocation = Utils.query("""SELECT * FROM Users_Locations 
 													WHERE user_id = %s AND TIMESTAMPDIFF(%s, time) < 10 
-													ORDER BY time desc LIMIT 1""")
+													ORDER BY time desc LIMIT 1""", (user_id, datetime.now()))
 					isRoute = FALSE
 					#if len(previousLocation) == 1 and checkDistance(previousLocation[0]["latitude"], previousLocation[0]["longitude"],body["latitude"],body["longitude"]) == 1: 
 					#	isRoute = TRUE
