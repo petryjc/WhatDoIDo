@@ -37,7 +37,10 @@ class Suggestion(object):
       return user_check[1]
     user_id = user_check[1]
 
-    events = Utils.query("""SELECT * FROM Cyclical_Events c JOIN Locations l ON c.location_id = l.location_id  WHERE user_id = %s""", (user_id))
+    events = Utils.query("""SELECT * 
+                            FROM (Events e JOIN Locations l 
+                            ON e.location_id = l.location_id) JOIN Cyclical_Events ce ON ce.event_id = e.event_id
+                            WHERE user_id = %s""", (user_id))
 
     beginning = datetime.strptime(body["beginning"],"%m-%d-%Y").date()
     ending = datetime.strptime(body["ending"],"%m-%d-%Y").date()
