@@ -119,10 +119,9 @@ class Event(object):
     
     if results:
       for row in results:
-        if row["event_type"] == "cycle"  
+        if row["event_type"] == "cycle": 
           cycle_class = type_to_class[row["cycle_type"]]
-          row["occurances"] = [(cycle_class.time(x[0]),cycle_class.time(x[1])) for x in json.JSONDecoder().decode(row["occurances"])]
-        
+          row["occurances"] = [(cycle_class.time(x[0]),cycle_class.time(x[1])) for x in json.JSONDecoder().decode(row["occurances"])]      
     ret = {
             "events" : results
             }
@@ -172,7 +171,7 @@ class Event(object):
         Utils.execute("""UPDATE Cyclical_Events
                          SET occurances = %s,
                              cycle_type = %s
-                         WHERE event_id = %s""", (json.JSONEncoder().encode(occurances),cycle_class,body["event_id"]))
+                         WHERE event_id = %s""", (json.JSONEncoder().encode(occurances),body["cycle_type"],body["event_id"]))
       except Exception:
         return json.JSONEncoder().encode({"status": Utils.status(3981,"Could not update event")})
 
