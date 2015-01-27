@@ -18,7 +18,6 @@ import urllib2
 def callPostCommand(command, location):
   #url = "http://" + platform.node() + ".wlan.rose-hulman.edu/" + location
   url = "http://localhost:8080/" + location
-  print url
   #url = "http://summary.pneumaticsystem.com/" + location
   headers = {"Content-Type" : 'application/json'}
   req = urllib2.Request(url, command, headers)
@@ -140,6 +139,7 @@ class Test(unittest.TestCase):
       "token" : self.loginResult["token"]
     })  
     locationResult = json.loads(callPostCommand(locationSaveCommand, 'api/location/add'))
+    print locationResult
     self.assertEqual(locationResult['status']['code'],0)
     
   def test_suggestion_single(self):
