@@ -94,6 +94,8 @@ class Event(object):
       return user_check[1]
     user_id = user_check[1]
 
+    print "GOT HERE"
+
     results = Utils.query(
               """ SELECT ce.event_id, name, address, cycle_type, occurances, locked, deleted 
                   FROM (Events e JOIN Cyclical_Events ce ON e.event_id = ce.event_id)  
