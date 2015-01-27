@@ -138,8 +138,10 @@ class Test(unittest.TestCase):
       "longitude" : -87.332014,
       "token" : self.loginResult["token"]
     })  
-    locationResult = json.loads(callPostCommand(locationSaveCommand, 'api/location/add'))
     print locationResult
+    
+    locationResult = json.loads(callPostCommand(locationSaveCommand, 'api/location/add'))
+    
     self.assertEqual(locationResult['status']['code'],0)
     
   def test_suggestion_single(self):
