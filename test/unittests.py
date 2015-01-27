@@ -138,8 +138,7 @@ class Test(unittest.TestCase):
       "longitude" : -87.332014,
       "token" : self.loginResult["token"]
     })  
-    print locationResult
-    
+
     locationResult = json.loads(callPostCommand(locationSaveCommand, 'api/location/add'))
     
     self.assertEqual(locationResult['status']['code'],0)

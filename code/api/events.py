@@ -94,11 +94,8 @@ class Event(object):
      # Find the user ID of the person making the request.
     user_check = Utils.validate_user(body["token"])
     if(user_check[0]):
-      print "GOT HERE 2"
       return user_check[1]
     user_id = user_check[1]
-
-    print "GOT HERE 3"
 
     results = Utils.query(
               """ SELECT ce.event_id, name, address, cycle_type, occurances, locked, deleted 
