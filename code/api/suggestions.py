@@ -63,6 +63,18 @@ class Suggestion(object):
                 "beginning" : (day + timedelta(seconds=occurance[0] - dayStartSeconds)).isoformat(),
                 "ending" : (day + timedelta(seconds=occurance[1] - dayStartSeconds)).isoformat()
               })
-
+    print "CALENDAR"
+    print calendar
+    print "=========="
+    spanningEvents(user_id calendar)
+    print "=========="
+    
     return json.JSONEncoder().encode({"calendar":calendar,"status":Utils.status(0,"OK")})
 
+  def placeSpanningEvents(self, user_id, calendar):
+
+    spanningEvents = list(Utils.query("""SELECT * 
+                                    FROM (Events e JOIN Locations l ON e.location_id = location_id) 
+                                    JOIN SpanningEvents se ON se.event_id = e.event_id
+                                    WHERE user_id = %s""", (user_id)))
+    print spanningEvents
