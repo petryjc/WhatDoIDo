@@ -75,6 +75,6 @@ class Suggestion(object):
 
     spanningEvents = Utils.query("""SELECT * 
                                     FROM (Events e JOIN Locations l ON e.location_id = l.location_id) 
-                                    JOIN SpanningEvents se ON se.event_id = e.event_id
+                                    JOIN Spanning_Events se ON se.event_id = e.event_id
                                     WHERE e.user_id = %s""", (user_id))
     print spanningEvents
