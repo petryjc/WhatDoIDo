@@ -74,7 +74,7 @@ class Suggestion(object):
   def placeSpanningEvents(self, user_id, calendar):
 
     spanningEvents = Utils.query("""SELECT * 
-                                    FROM (Events e JOIN Locations l ON e.location_id = location_id) 
+                                    FROM (Events e JOIN Locations l ON e.location_id = l.location_id) 
                                     JOIN SpanningEvents se ON se.event_id = e.event_id
                                     WHERE e.user_id = %s""", (user_id))
     print spanningEvents
