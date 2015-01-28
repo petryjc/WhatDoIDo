@@ -66,15 +66,15 @@ class Suggestion(object):
     print "CALENDAR"
     print calendar
     print "=========="
-    spanningEvents(user_id calendar)
+    self.placeSpanningEvents(user_id, calendar)
     print "=========="
     
     return json.JSONEncoder().encode({"calendar":calendar,"status":Utils.status(0,"OK")})
 
   def placeSpanningEvents(self, user_id, calendar):
 
-    spanningEvents = list(Utils.query("""SELECT * 
+    spanningEvents = Utils.query("""SELECT * 
                                     FROM (Events e JOIN Locations l ON e.location_id = location_id) 
                                     JOIN SpanningEvents se ON se.event_id = e.event_id
-                                    WHERE user_id = %s""", (user_id)))
+                                    WHERE e.user_id = %s""", (user_id))
     print spanningEvents
