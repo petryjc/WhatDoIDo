@@ -36,6 +36,17 @@ class TestScript:
 		for route in self.routes:
 			self.route_ids.append(getLocationID(route))
 
+	def callPostCommand(self,command,location):
+		#url = "http://" + platform.node() + ".wlan.rose-hulman.edu/" + location
+		url = "http://localhost/" + location
+		#url = "http://summary.pneumaticsystem.com/" + location
+		headers = {"Content-Type" : 'application/json'}
+		req = urllib2.Request(url, command, headers)
+		response = urllib2.urlopen(req)  
+		the_page = response.read()
+	  
+		return the_page
+
 	def initUser(self):
 
 		username  = "DemoTest"
