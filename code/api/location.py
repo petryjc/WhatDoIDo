@@ -74,7 +74,7 @@ class Location(object):
 													ORDER BY time DESC LIMIT 1""", (user_id))
 
 					is_route = False
-					if len(previousLocation) == 1 and self.checkDistance(previousLocation[0]["latitude"], previousLocation[0]["longitude"],body["latitude"],body["longitude"]) == 1: 
+					if len(previousLocation) == 1 and self.checkDistance(previousLocation[0]['latitude'], previousLocation[0]['longitude'],body['latitude'],body['longitude']) == 1: 
 						is_route = True
 					Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time, is_route) 
 							VALUES(%s, %s, %s, %s)""",
