@@ -29,12 +29,12 @@ class TestScript:
 		self.route_ids = []
 
 	def initLocs(self):
-		self.home_id = getLocationID(self.home)
-		self.work_id = getLocationID(self.work)
-		self.extra_id = getLocationID(self.extra)
+		self.home_id = self.getLocationID(self.home)
+		self.work_id = self.getLocationID(self.work)
+		self.extra_id = self.getLocationID(self.extra)
 		
 		for route in self.routes:
-			self.route_ids.append(getLocationID(route))
+			self.route_ids.append(self.getLocationID(route))
 
 	def callPostCommand(self,command,location):
 		#url = "http://" + platform.node() + ".wlan.rose-hulman.edu/" + location
