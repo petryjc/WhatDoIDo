@@ -50,12 +50,12 @@ class Location(object):
 													WHERE user_id = %s 
 													ORDER BY time DESC LIMIT 1""", (user_id))
 
-					isRoute = False
+					is_route = False
 					if len(previousLocation) == 1 and checkDistance(previousLocation[0]["latitude"], previousLocation[0]["longitude"],body["latitude"],body["longitude"]) == 1: 
-						isRoute = True
-					Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time, isRoute) 
+						is_route = True
+					Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time, is_route) 
 							VALUES(%s, %s, %s, %s)""",
-							(user_id, location_id, datetime.now(), isRoute))
+							(user_id, location_id, datetime.now(), is_route))
 					return json.JSONEncoder().encode( Utils.status_more( 0, "OK" ) )
 			return json.JSONEncoder().encode( Utils.status_more( 35, "Could not save to database" ) )
 

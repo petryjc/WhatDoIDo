@@ -263,7 +263,7 @@ class Event(object):
             event = {"user_id":user_id,"location_id":loc.location_id,"address":loc.address,"cycle_type":sorter.NAME,"occurances":event_times}
             cycle_event_list.append(event)
     #Now that we found all of the events, we need to compare them to what is already in the database and delete any cycles that are no longer going, update ones that have new occurance, etc.
-    cyclical_events = Utils.query("""SELECT * FROM Cyclical_Events WHERE user_id = %s""",(user_id))
+    cyclical_events = Utils.query("""SELECT * FROM Events e JOIN Cyclical_Events ce ON e.event_id = ce.event_id WHERE e.user_id = %s""",(user_id))
     for cycle in cyclical_events:
       matches = [x for x in cycle_event_list if x["location_id"] == cycle["location_id"] and x["cycle_type"] == cycle["cycle_type"]]
       if matches:
@@ -278,8 +278,10 @@ class Event(object):
     
     #now go through the remaining "new" events and add them to the events
     for remaining_event in cycle_event_list:
-      Utils.execute("INSERT INTO Cyclical_Events(user_id, location_id, name, cycle_type, occurances) VALUE(%s,%s,%s,%s,%s)",
-            (remaining_event["user_id"],remaining_event["location_id"],remaining_event["address"],remaining_event["cycle_type"],json.JSONEncoder().encode(remaining_event["occurances"])))
+      event_id = Utils.execute_id("INSERT INTO Events(event_type, user_id, location_id, name, locked, deleted) VALUE(%s,%s,%s,%s,0,0)", 
+        ("cycle", remaining_event["user_id"],remaining_event["location_id"],remaining_event["address"]))
+      Utils.execute("INSERT INTO Cyclical_Events(event_id , cycle_type, occurances) VALUE(%s,%s,%s)",
+            (event_id,remaining_event["cycle_type"],json.JSONEncoder().encode(remaining_event["occurances"])))
 
     return location_block_list
 

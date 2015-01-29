@@ -3,6 +3,7 @@ from timeutils import Day, Week, Month
 import cherrypy
 import json
 from datetime import *
+from operator import itemgetter
 
 class Suggestion(object):
   @cherrypy.expose
@@ -66,7 +67,7 @@ class Suggestion(object):
     print "CALENDAR"
     print calendar
     print "=========="
-    self.placeSpanningEvents(user_id, calendar)
+    self.placeSpanningEvents(user_id, sorted(calendar,key=itemgetter('beginning'))
     print "=========="
     
     return json.JSONEncoder().encode({"calendar":calendar,"status":Utils.status(0,"OK")})
@@ -77,4 +78,19 @@ class Suggestion(object):
                                     FROM (Events e JOIN Locations l ON e.location_id = l.location_id) 
                                     JOIN Spanning_Events se ON se.event_id = e.event_id
                                     WHERE e.user_id = %s""", (user_id))
+    
+    for i in range(0, len(calendar) - 1):
+      freeTime = calendar[i+1]["beginning"] - calendar[i]["ending"]
+      for spanningEvent in spanningEvents:
+        if freeTime > spanningEvent["avg_length_of_event"]
+          calendar.append({
+                "name" : spanningEvent["name"],
+                "location" : spanningEvent["address"],
+                "event_id" : spanningEvent["event_id"],
+                "event_type" : "spanning",
+                "beginning" : calendar[i]["ending"],
+                "ending" : calendar[i+1]["beginning"]
+              })
+        
+
     print spanningEvents

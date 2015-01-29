@@ -34,7 +34,7 @@ CREATE TABLE Users_Locations
     user_id int,
     location_id int,
     time DATETIME,
-    is_Route BOOLEAN,
+    is_route BOOLEAN,
     CONSTRAINT FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
     CONSTRAINT FOREIGN KEY (location_id) REFERENCES Locations(location_id) ON DELETE CASCADE,
     CONSTRAINT PRIMARY KEY (user_id, location_id, time)
@@ -69,6 +69,9 @@ CREATE TABLE Spanning_Events
     min_time_between DATETIME,
     range_of_span DATETIME,
     avg_length_of_event DATETIME,
+    avg_time_of_day DATETIME,
+    last_occurence DATETIME,
+    time_of_day_sdev DATETIME
     CONSTRAINT FOREIGN KEY (event_id) REFERENCES Events(event_id) ON DELETE CASCADE
 );
 
