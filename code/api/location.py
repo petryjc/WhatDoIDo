@@ -69,12 +69,13 @@ class Location(object):
 							 VALUES(%s, %s, %s, %s)""", 
 							(body["latitude"], body["longitude"], content['results'][0]['formatted_address'], "I don't know"))
 				if (location_id  != -1):
-					previousLocation = Utils.query("""SELECT * FROM Users_Locations 
+					previousUserLocation = Utils.query("""SELECT location_id FROM Users_Locations 
 													WHERE user_id = %s 
 													ORDER BY time DESC LIMIT 1""", (user_id))
-
+					previousLocation = Utils.query("""SELECT * FROM Locations WHERE location_id = %s""", (previousUserLocation[0]["location_id"]))
+					
 					is_route = False
-					if len(previousLocation) == 1 and self.checkDistance(previousLocation[0]['latitude'], previousLocation[0]['longitude'],body['latitude'],body['longitude']) == 1: 
+					if len(previousLocation) == 1 and self.checkDistance(previousLocation[0]["latitude"], previousLocation[0]["longitude"],body["latitude"],body["longitude"]) == 1: 
 						is_route = True
 					Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time, is_route) 
 							VALUES(%s, %s, %s, %s)""",
