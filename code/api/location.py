@@ -51,7 +51,7 @@ class Location(object):
 													ORDER BY time DESC LIMIT 1""", (user_id))
 
 					is_route = False
-					if len(previousLocation) == 1 and checkDistance(previousLocation[0]["latitude"], previousLocation[0]["longitude"],body["latitude"],body["longitude"]) == 1: 
+					if len(previousLocation) == 1 and self.checkDistance(previousLocation[0]["latitude"], previousLocation[0]["longitude"],body["latitude"],body["longitude"]) == 1: 
 						is_route = True
 					Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time, is_route) 
 							VALUES(%s, %s, %s, %s)""",
@@ -63,7 +63,7 @@ class Location(object):
 
 
 
-		def haversine(lat1, lon1, lat2, lon2):
+		def haversine(self, lat1, lon1, lat2, lon2):
 			R = 3958.8 # Earth radius in miles
 
 			dLat = radians(lat2 - lat1)
@@ -76,8 +76,8 @@ class Location(object):
 
 			return R * c
 
-		def checkDistance(lat1, lon1, lat2, lon2):
-			dist = haversine(lat1, lon1, lat2, lon2)
+		def checkDistance(self, lat1, lon1, lat2, lon2):
+			dist = self.haversine(lat1, lon1, lat2, lon2)
 			MAX_DISTANCE = 2.5 # 2.5 miles is how far one travels in 5 minutes at 30 mph
 			if dist > MAX_DISTANCE:
 				return 1
