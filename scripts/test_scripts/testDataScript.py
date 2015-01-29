@@ -75,7 +75,7 @@ class TestScript:
 
 	def getLocationID(self, location):
 		
-		loc_id = Utils.query("SELECT location_id FROM Events WHERE name = %s", (location[3]))
+		loc_id = Utils.query("SELECT location_id FROM Locations WHERE place = %s", (location[3]))
 		
 		if len(loc_id) > 0:
 			return loc_id[0]["location_id"]
@@ -125,8 +125,6 @@ class TestScript:
 		return timeCounter
 
 	def add(self,place,time):
-		print("hey: ")
-		print(place)
 		if (place != -1):
 			Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time) 
 								VALUES(%s, %s, %s)""", (str(self.user_id), str(place), time))
