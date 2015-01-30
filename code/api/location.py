@@ -9,6 +9,29 @@ class Location(object):
 	def index(self):
 		return "Location"
 
+
+
+	def haversine(self, lat1, lon1, lat2, lon2):
+		R = 3958.8 # Earth radius in miles
+
+		dLat = radians(lat2 - lat1)
+		dLon = radians(lon2 - lon1)
+		lat1 = radians(lat1)
+		lat2 = radians(lat2)
+
+		a = sin(dLat/2)**2 + cos(lat1)*cos(lat2)*sin(dLon/2)**2
+		c = 2*asin(sqrt(a))
+
+		return R * c
+
+	def checkDistance(self, lat1, lon1, lat2, lon2):
+		dist = self.haversine(lat1, lon1, lat2, lon2)
+		MAX_DISTANCE = 2.5 # 2.5 miles is how far one travels in 5 minutes at 30 mph
+		if dist > MAX_DISTANCE:
+			return 1
+		return 0 	
+
+
 	@cherrypy.expose
 	def add(self):
 		body = json.loads( cherrypy.request.body.read() )
@@ -46,12 +69,13 @@ class Location(object):
 							 VALUES(%s, %s, %s, %s)""", 
 							(body["latitude"], body["longitude"], content['results'][0]['formatted_address'], "I don't know"))
 				if (location_id  != -1):
-					previousLocation = Utils.query("""SELECT * FROM Users_Locations 
+					previousUserLocation = Utils.query("""SELECT location_id FROM Users_Locations 
 													WHERE user_id = %s 
 													ORDER BY time DESC LIMIT 1""", (user_id))
-
+					previousLocation = Utils.query("""SELECT * FROM Locations WHERE location_id = %s""", (previousUserLocation[0]["location_id"]))
+					
 					is_route = False
-					if len(previousLocation) == 1 and checkDistance(previousLocation[0]["latitude"], previousLocation[0]["longitude"],body["latitude"],body["longitude"]) == 1: 
+					if len(previousLocation) == 1 and self.checkDistance(previousLocation[0]["latitude"], previousLocation[0]["longitude"],body["latitude"],body["longitude"]) == 1: 
 						is_route = True
 					Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time, is_route) 
 							VALUES(%s, %s, %s, %s)""",
@@ -63,22 +87,4 @@ class Location(object):
 
 
 
-		def haversine(lat1, lon1, lat2, lon2):
-			R = 3958.8 # Earth radius in miles
 
-			dLat = radians(lat2 - lat1)
-			dLon = radians(lon2 - lon1)
-			lat1 = radians(lat1)
-			lat2 = radians(lat2)
-
-			a = sin(dLat/2)**2 + cos(lat1)*cos(lat2)*sin(dLon/2)**2
-			c = 2*asin(sqrt(a))
-
-			return R * c
-
-		def checkDistance(lat1, lon1, lat2, lon2):
-			dist = haversine(lat1, lon1, lat2, lon2)
-			MAX_DISTANCE = 2.5 # 2.5 miles is how far one travels in 5 minutes at 30 mph
-			if dist > MAX_DISTANCE:
-				return 1
-			return 0 	
