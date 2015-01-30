@@ -110,4 +110,59 @@ Responds
 {
   'status'  : {'msg': 'OK', 'code': 0}
 }
+
+Buddy
+/api/buddy/request
+Sends a request to the recipient to add them as a buddy
+Request
+{
+  “token" : "login_token",
+  "buddy" : "username or email"
+}
+
+/api/buddy/pending_requests
+Returns a list of pending buddy requests
+Request
+{
+  "token" : "login_token"
+}
+
+Returns
+{
+  'status'  : {'msg': 'OK', 'code': 0}, 
+  'requests' : 
+    [
+      {“user_id”:1,”username”:”petryjc”,”email”:"petryjc@rose-hulman.edu"},
+      {“user_id”:2,”username”:”faulknks”,”email”:"faulknks@rose-hulman.edu"},
+      {“user_id”:3,”username”:“gabemadeausername”,”email”:"glenngs@rose-hulman.edu"}
+    ]
+}
+
+/api/buddy/accept
+Accepts a pending friend request
+{
+  “token" : "login_token",
+  "buddy_id" : user_id
+}
+
+/api/buddy/list
+Returns a list of pending buddy requests
+Request
+{
+  "token" : "login_token"
+}
+
+Returns
+{
+  'status'  : {'msg': 'OK', 'code': 0}, 
+  'requests' : 
+    [
+      {“user_id”:1,”username”:”petryjc”,”email”:"petryjc@rose-hulman.edu"},
+      {“user_id”:2,”username”:”faulknks”,”email”:"faulknks@rose-hulman.edu"},
+      {“user_id”:3,”username”:“gabemadeausername”,”email”:"glenngs@rose-hulman.edu"}
+    ]
+}
+
+IMPORTANT NOTE!!! pending_requests returns a list of the users who have requested you as a buddy that you have yet to accept
+list returns all buddies that you have that have been approved
   

@@ -64,33 +64,33 @@ class Suggestion(object):
                 "beginning" : (day + timedelta(seconds=occurance[0] - dayStartSeconds)).isoformat(),
                 "ending" : (day + timedelta(seconds=occurance[1] - dayStartSeconds)).isoformat()
               })
-    print "CALENDAR"
+    """print "CALENDAR"
     print calendar
     print "=========="
     self.placeSpanningEvents(user_id, sorted(calendar,key=itemgetter('beginning'))
-    print "=========="
+    print "=========="""
     
     return json.JSONEncoder().encode({"calendar":calendar,"status":Utils.status(0,"OK")})
 
-  def placeSpanningEvents(self, user_id, calendar):
+  # def placeSpanningEvents(self, user_id, calendar):
 
-    spanningEvents = Utils.query("""SELECT * 
-                                    FROM (Events e JOIN Locations l ON e.location_id = l.location_id) 
-                                    JOIN Spanning_Events se ON se.event_id = e.event_id
-                                    WHERE e.user_id = %s""", (user_id))
+    # spanningEvents = Utils.query("""SELECT * 
+                                    # FROM (Events e JOIN Locations l ON e.location_id = l.location_id) 
+                                    # JOIN Spanning_Events se ON se.event_id = e.event_id
+                                    # WHERE e.user_id = %s""", (user_id))
     
-    for i in range(0, len(calendar) - 1):
-      freeTime = calendar[i+1]["beginning"] - calendar[i]["ending"]
-      for spanningEvent in spanningEvents:
-        if freeTime > spanningEvent["avg_length_of_event"]
-          calendar.append({
-                "name" : spanningEvent["name"],
-                "location" : spanningEvent["address"],
-                "event_id" : spanningEvent["event_id"],
-                "event_type" : "spanning",
-                "beginning" : calendar[i]["ending"],
-                "ending" : calendar[i+1]["beginning"]
-              })
+    # for i in range(0, len(calendar) - 1):
+      # freeTime = calendar[i+1]["beginning"] - calendar[i]["ending"]
+      # for spanningEvent in spanningEvents:
+        # if freeTime > spanningEvent["avg_length_of_event"]
+          # calendar.append({
+                # "name" : spanningEvent["name"],
+                # "location" : spanningEvent["address"],
+                # "event_id" : spanningEvent["event_id"],
+                # "event_type" : "spanning",
+                # "beginning" : calendar[i]["ending"],
+                # "ending" : calendar[i+1]["beginning"]
+              # })
         
 
-    print spanningEvents
+    # print spanningEvents
