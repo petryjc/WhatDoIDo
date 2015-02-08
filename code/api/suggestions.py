@@ -97,12 +97,12 @@ class Suggestion(object):
   def scoreCalendar(self, calendar):
     sortedCalendar = sorted(calendar, key=itemgetter('beginning'))
     calendarScore = 0
-    for i in range(0, len(calendar) - 1):
+    for i in range(0, len(sortedCalendar) - 1):
         eventScore = 0
-        currentEvent = calendar[i]
-        if i < len(calendar)-1:
-            nextEvent == calendar[i+1]
-        if (i < len(calendar)-1) and self.eventsGetDistanceScored(currentEvent,nextEvent):
+        currentEvent = sortedCalendar[i]
+        if i < len(sortedCalendar)-1:
+            nextEvent == sortedCalendar[i+1]
+        if (i < len(sortedCalendar)-1) and self.eventsGetDistanceScored(currentEvent,nextEvent):
             ceLocation = Utils.query("""SELECT latitude, longitude
                                                   FROM Locations
                                                   WHERE address = %s""", (currentEvent["location"]))
