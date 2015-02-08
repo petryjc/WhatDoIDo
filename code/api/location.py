@@ -9,23 +9,8 @@ class Location(object):
 	def index(self):
 		return "Location"
 
-
-
-	def haversine(self, lat1, lon1, lat2, lon2):
-		R = 3958.8 # Earth radius in miles
-
-		dLat = radians(lat2 - lat1)
-		dLon = radians(lon2 - lon1)
-		lat1 = radians(lat1)
-		lat2 = radians(lat2)
-
-		a = sin(dLat/2)**2 + cos(lat1)*cos(lat2)*sin(dLon/2)**2
-		c = 2*asin(sqrt(a))
-
-		return R * c
-
 	def checkDistance(self, lat1, lon1, lat2, lon2):
-		dist = self.haversine(lat1, lon1, lat2, lon2)
+		dist = Utils.haversine(lat1, lon1, lat2, lon2)
 		MAX_DISTANCE = 2.5 # 2.5 miles is how far one travels in 5 minutes at 30 mph
 		if dist > MAX_DISTANCE:
 			return 1
