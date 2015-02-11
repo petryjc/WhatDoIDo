@@ -9,8 +9,6 @@ class Location(object):
 	def index(self):
 		return "Location"
 
-
-
 	def haversine(self, lat1, lon1, lat2, lon2):
 		R = 3958.8 # Earth radius in miles
 
