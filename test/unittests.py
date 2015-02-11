@@ -49,7 +49,6 @@ class Test(unittest.TestCase):
     self.username  = str(uuid.uuid4())
     self.password  = str(uuid.uuid4())
     self.email     = str(uuid.uuid4())
-    self.device_id = str(uuid.uuid4())
     
     self.registerCommand = json.JSONEncoder().encode({
       "username" : self.username,
@@ -233,6 +232,7 @@ class Test(unittest.TestCase):
     self.assertEqual(result['events'][0]['occurances'], [["Monday 12:30","Monday 14:00"],["Saturday 3:00","Saturday 7:00"]])
     
   def test_timeutils(self):
+    #OMG it's an actual unit test!!!!!! WHAT UP!!!
     t1 = datetime.now()
     s1 = Day.seconds(t1)
     t1p = Day.time(s1)
@@ -248,6 +248,70 @@ class Test(unittest.TestCase):
     t3p = Month.time(s3)
     s31 = Month.time_to_seconds(t3p)
     self.assertTrue(abs(s31-s3) < 60)
+    
+  def test_buddy(self):
+    # we need to add someone so we can make them our friend
+    email1     = str(uuid.uuid4())
+    email2     = str(uuid.uuid4())
+    username1  = str(uuid.uuid4())
+    username2  = str(uuid.uuid4())
+    password  = "DONOTCARE"
+    
+    #register the extra users
+    json.loads(callPostCommand(json.JSONEncoder().encode({"username" : username1,"password" : password,"email" : email1}), 'api/register'))
+    json.loads(callPostCommand(json.JSONEncoder().encode({"username" : username2,"password" : password,"email" : email2}), 'api/register'))
+    
+    #log them in
+    loginResult1 = json.loads(callPostCommand(json.JSONEncoder().encode({"username": username1,"password" : password}), 'api/login'))
+    loginResult2 = json.loads(callPostCommand(json.JSONEncoder().encode({"username": username2,"password" : password}), 'api/login'))
+    
+    #have them request me as a friend
+    command = json.JSONEncoder().encode({"token" : loginResult1['token'],"buddy" : self.email})  
+    result = json.loads(callPostCommand(command, 'api/buddy/request'))
+    self.assertEqual(result['status']['code'],0)
+    
+    command = json.JSONEncoder().encode({"token" : loginResult2['token'],"buddy" : self.username})  
+    result = json.loads(callPostCommand(command, 'api/buddy/request'))
+    self.assertEqual(result['status']['code'],0)
+    
+    #see pending buddy requests
+    request_command = json.JSONEncoder().encode({"token" :self.loginResult['token']})  
+    result = json.loads(callPostCommand(request_command, 'api/buddy/pending_requests'))
+    self.assertEqual(result['status']['code'],0)
+    self.assertEqual(len(result['requests']),2)
+    creation_ordered = sorted(result['requests'],key=lambda x: x["user_id"])
+    self.assertEqual(creation_ordered[0]["username"],username1)
+    self.assertEqual(creation_ordered[0]["email"],email1)
+    self.assertEqual(creation_ordered[1]["username"],username2)
+    self.assertEqual(creation_ordered[1]["email"],email2)
+    
+    #accept the first buddy request
+    command = json.JSONEncoder().encode({"token" :self.loginResult['token'], "buddy_id":creation_ordered[0]["user_id"]})  
+    result = json.loads(callPostCommand(command, 'api/buddy/accept'))
+    self.assertEqual(result['status']['code'],0)
+    
+    #should have 1 pending request and 1 buddy
+    result = json.loads(callPostCommand(request_command, 'api/buddy/pending_requests'))
+    self.assertEqual(result['status']['code'],0)
+    self.assertEqual(len(result['requests']),1)
+    self.assertEqual(result['requests'][0]["username"],username2)
+    self.assertEqual(result['requests'][0]["email"],email2)
+    
+    result = json.loads(callPostCommand(request_command, 'api/buddy/list'))
+    self.assertEqual(result['status']['code'],0)
+    self.assertEqual(len(result['requests']),1)
+    self.assertEqual(result['requests'][0]["username"],username1)
+    self.assertEqual(result['requests'][0]["email"],email1)
+    
+    #make sure that the other person also has you as a buddy (buddy is symmetric)
+    command = json.JSONEncoder().encode({"token" : loginResult1['token']})  
+    result = json.loads(callPostCommand(command, 'api/buddy/list'))
+    self.assertEqual(result['status']['code'],0)
+    self.assertEqual(len(result['requests']),1)
+    self.assertEqual(result['requests'][0]["username"],self.username)
+    self.assertEqual(result['requests'][0]["email"],self.email)
+    
+        
     
   def tearDown(self):
     deleteAccountCommand = json.JSONEncoder().encode({

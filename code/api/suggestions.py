@@ -63,7 +63,7 @@ class Suggestion(object):
                 "event_type" : "cycle",
                 "beginning" : (day + timedelta(seconds=occurance[0] - dayStartSeconds)).isoformat(),
                 "ending" : (day + timedelta(seconds=occurance[1] - dayStartSeconds)).isoformat()
-              })
+   
    # print "CALENDAR"
    # print calendar
    # print "=========="
@@ -94,3 +94,29 @@ class Suggestion(object):
         
 
    # print spanningEvents
+  def scoreCalendar(self, calendar):
+    sortedCalendar = sorted(calendar, key=itemgetter('beginning'))
+    calendarScore = 0
+    for i in range(0, len(sortedCalendar) - 1):
+        eventScore = 0
+        currentEvent = sortedCalendar[i]
+        if i < len(sortedCalendar)-1:
+            nextEvent == sortedCalendar[i+1]
+        if (i < len(sortedCalendar)-1) and self.eventsGetDistanceScored(currentEvent,nextEvent):
+            ceLocation = Utils.query("""SELECT latitude, longitude
+                                                  FROM Locations
+                                                  WHERE address = %s""", (currentEvent["location"]))
+            neLocation = Utils.query("""SELECT latitude, longitude
+                                               FROM Locations
+                                               WHERE address = %s""", (nextEvent["location"]))
+            distance = Utils.haversine(ceLocation["latitude"],ceLocation["longitude"],neLocation["latitude"],neLocaiton["longitude"])
+            eventScore += distance
+        calendarScore += eventScore
+    return calendarScore
+     
+        
+  def eventsGetDistanceScore(self, event1, event2):
+    return (event1["event_type"] == "spanning") or (event1["event_type"] == "cycle" and event2["event_type"] == "spanning")
+            
+            
+    
