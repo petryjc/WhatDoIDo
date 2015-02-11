@@ -1,5 +1,6 @@
 from utils import Utils
 from timeutils import Day, Week, Month
+from Queue import PriorityQueue
 import cherrypy
 import json
 from datetime import *
@@ -63,34 +64,67 @@ class Suggestion(object):
                 "event_type" : "cycle",
                 "beginning" : (day + timedelta(seconds=occurance[0] - dayStartSeconds)).isoformat(),
                 "ending" : (day + timedelta(seconds=occurance[1] - dayStartSeconds)).isoformat()
-   
-   # print "CALENDAR"
-   # print calendar
-   # print "=========="
-   # self.placeSpanningEvents(user_id, sorted(calendar,key=itemgetter('beginning'))
-   # print "=========="
-    
+
+   # calendar = self.placeSpanningEvents(user_id, calendar, beginning, ending)
+       
     return json.JSONEncoder().encode({"calendar":calendar,"status":Utils.status(0,"OK")})
 
- # def placeSpanningEvents(self, user_id, calendar):
+  def placeSpanningEvents(self, user_id, calendar, beginning, ending):
 
-   # spanningEvents = Utils.query("""SELECT * 
-   #                                 FROM (Events e JOIN Locations l ON e.location_id = l.location_id) 
-   #                                 JOIN Spanning_Events se ON se.event_id = e.event_id
-   #                                 WHERE e.user_id = %s""", (user_id))
-    
-   #for i in range(0, len(calendar) - 1):
-     # freeTime = calendar[i+1]["beginning"] - calendar[i]["ending"]
-     # for spanningEvent in spanningEvents:
-     #   if freeTime > spanningEvent["avg_length_of_event"]
-     #     calendar.append({
-     #           "name" : spanningEvent["name"],
-     #           "location" : spanningEvent["address"],
-     #           "event_id" : spanningEvent["event_id"],
-     #           "event_type" : "spanning",
-     #           "beginning" : calendar[i]["ending"],
-     #           "ending" : calendar[i+1]["beginning"]
-     #         })
+    sortedCalendar = sorted(calendar, key=itemgetter('beginning'))
+
+    spanningEvents = Utils.query("""SELECT * 
+                                    FROM (Events e JOIN Locations l ON e.location_id = l.location_id) 
+                                    JOIN Spanning_Events se ON se.event_id = e.event_id
+                                    WHERE e.user_id = %s""", (user_id))
+    eventsByDaysLeft = []
+
+    for i in range(0, len(spanningEvents)-1):
+      lastOccurance = Utils.query("""SELECT time
+                                     FROM Users_Locations
+                                     ORDER BY time DESC
+                                     WHERE user_id = %s
+                                     AND location_id = %s
+                                     AND is_route = 0
+                                     LIMIT 1""", (user_id, spanningEvents[i]["location_id"])
+      spanningEvents[i]["last_occurance"] = lastOccurance
+      spanningEvents[i]["last_chance"] = lastOccurance + spanningEvents[i]["min_time_between"] + spanningEvents[i]["range_of_span"]
+
+    pq = PriorityQueue()
+
+    eventsThatCanBePlaced = [e for e in spanningEvents if (e["last_occurance"] + e["min_time_between"]) >= beginning and (e["last_occurance"] + e["min_time_between"]) <= ending]
+    sortedEventsToPlace = sorted(eventsThatCanBePlaced, itemgetter('last_chance'))
+    pq.put(0,(sortedCalendar,sortedEventsToPlace,[]))
+    while not pq.empty():
+      (currentScore, (currentCalendar, eventsToPlace, placedEvents)) = pq.get()
+      if eventsToPlace.empty(): # We've placed every event in the calendar. Good job!
+        return currentCalendar
+      for i in range(0, len(currentCalendar) - 2):
+        eventEnding = strptime(currentCalendar[i]["ending"], "%Y-%m-%dT%H:%M:%S")
+        eventBeginning = strptime(currentCalendar[i+1]["beginning"],"%Y-%m-%dT%H:%M:%S")
+        time_between_events = eventBeginning - eventEnding
+        num_placed = 0
+        for s in range(0, len(eventsToPlace) - 1):
+          if eventENding - eventsToPlace[s]["last_occurance"] >= eventsToPlace[s]["min_time_between"] and time_between_events > eventsToPlace[s]["avg_length_of_event"]:
+            num_placed += 1
+            nextCalendar = list(currentCalendar)
+            nextEventsToPlace = list(eventsToPlace)
+            nextPlacedEvents = list(placedEvents)
+            nextCalendar.insert(i+1,{
+              "name" : eventsToPlace[s]["name"],
+              "location" : eventsToPlace[s]["address"],
+              "event_id" : eventsToPlace[s]["event_id"],
+              "event_type" : "spanning",
+              "beginning" : eventEnding
+              "ending" : eventEnding + eventsToPlace[s]["avg_length_of_event"]
+              })
+            nextPlacedEvents.append(nextEventsToPlace.pop(s))
+            nextCalendarScore = self.scoreCalendar(nextCalendar)
+            pq.put((nextCalendarScore,(nextCalendar,nextEventsToPlace,nextPlacedEvents)))
+        if num_placed == 0: # We don't have room for more events.
+          return currentCalendar
+    print "Well, something done goofed."
+    print "Emptied PriorityQueue while placing Spanning Events."
         
 
    # print spanningEvents
