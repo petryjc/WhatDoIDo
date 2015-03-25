@@ -38,7 +38,9 @@ class LoginController: UIViewController, UITextFieldDelegate {
             // Move to the UI thread
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
                 // Show the alert
-                alert.show()
+                if (!succeeded) {
+                    alert.show()
+                }
                 if (self.del.user.wasLoginSuccessful()) {
                     self.performLoginSegue()
                 }

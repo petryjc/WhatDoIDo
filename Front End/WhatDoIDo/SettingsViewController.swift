@@ -18,7 +18,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     
     var del = UIApplication.sharedApplication().delegate as AppDelegate
     var loadedName: String!
-    var settingsList = ["Log-out", "Delete Account"]
+    var settingsList = ["Interests", "Log-out", "Delete Account"]
     
     @IBAction func refresh() {
         self.refreshUI()
@@ -51,8 +51,10 @@ class SettingsViewController: UIViewController, UITableViewDelegate, UITableView
     func tableView(settingsTableView: UITableView!, didSelectRowAtIndexPath indexPath: NSIndexPath!) {
         println(indexPath.row) //This is where you do something with the selected setting
         if (indexPath.row == 0) {
-            logout("test");
+            performSegueWithIdentifier("interests", sender: self)
         } else if (indexPath.row == 1) {
+            logout("test");
+        } else if (indexPath.row == 2) {
             deleteAccount("test");
         }
     }

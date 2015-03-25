@@ -15,7 +15,8 @@ class SuggestionModel {
     var route: String
     var location: String
     var contact: String
-    var time: String
+    var startTime: String
+    var endTime: String
     
     init() {
         name = "Example Suggestion"
@@ -23,7 +24,8 @@ class SuggestionModel {
         route = "Suggestion Route"
         location = "Suggestion Location"
         contact = "Suggestion Contact"
-        time = "Suggestion Time"
+        startTime = "Suggestion Time"
+        endTime = "Boy I don't care"
     }
     
     func getName() -> String {
@@ -46,9 +48,16 @@ class SuggestionModel {
         return self.contact
     }
     
-    func getTime() -> String {
-        return self.time
+    func getStartTime() -> String {
+        return self.startTime
+    }
+    
+    func getEndTime() -> String {
+        return self.endTime
     }
 
+    func setName(name: String) {
+        self.name = name
+    }
     
 }

@@ -9,7 +9,7 @@
 import Foundation
 import UIKit
 
-class RegistrationViewController: UIViewController {
+class RegistrationViewController: UIViewController, UITextFieldDelegate {
     
     @IBOutlet var emailField : UITextField!
     @IBOutlet var uNameField : UITextField! //uNameField.text
@@ -67,6 +67,9 @@ class RegistrationViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.emailField.delegate = self
+        self.uNameField.delegate = self
+        self.passwordField.delegate = self
         // Do any additional setup after loading the view, typically from a nib.
     }
     
@@ -78,5 +81,12 @@ class RegistrationViewController: UIViewController {
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject!) {
 
     }
+    
+    func textFieldShouldReturn(textField: UITextField!) -> Bool // called when 'return' key pressed. return NO to ignore.
+    {
+        textField.resignFirstResponder()
+        return true;
+    }
+    
     
 }

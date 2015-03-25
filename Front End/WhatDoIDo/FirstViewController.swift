@@ -13,9 +13,9 @@ import CoreLocation
 class FirstViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, CLLocationManagerDelegate {
 
     @IBOutlet var uNameLabel : UILabel!
-    @IBOutlet var refreshButton : UIButton!
+    //@IBOutlet var refreshButton : UIButton!
     @IBOutlet var suggestionTableView : UITableView!
-    @IBOutlet var suggestButton : UIButton!
+    //@IBOutlet var suggestButton : UIButton!
     
     var locationManager = CLLocationManager()
     
@@ -32,18 +32,19 @@ class FirstViewController: UIViewController, UITableViewDelegate, UITableViewDat
         //self.del.user.suggestionList = []
         // Do any additional setup after loading the view, typically from a nib.
         self.suggestionTableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: "cell")
-        
-        refreshUI()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        //locationManager.distanceFilter =
+        locationManager.distanceFilter = 250
         locationManager.requestAlwaysAuthorization()
-        //locationManager.startUpdatingLocation()
+        locationManager.startUpdatingLocation()
         del.locationManager = locationManager
+        getTodaysSuggestions() {
+            self.refreshUI()
+        }
     }
     
     func tableView(suggestionTableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        println(self.del.user.suggestionList.count);
+        //println(self.del.user.suggestionList.count);
         return self.del.user.suggestionList.count;
     }
     
@@ -57,31 +58,50 @@ class FirstViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     func tableView(suggestionTableView: UITableView!, didSelectRowAtIndexPath indexPath: NSIndexPath!) {
-        println(self.del.user.suggestionList[indexPath.row]) //Actually do something with a selected suggestion here
-        del.suggestionModel = self.del.user.suggestionList[indexPath.row]
+        //println(self.del.user.suggestionList[indexPath.row]) //Actually do something with a selected suggestion here
+        var sugg: SuggestionModel = self.del.user.suggestionList[indexPath.row]
+        del.suggestionModel = sugg
+        println(sugg.getName())
+        println(sugg.getDesc())
+        println(sugg.getRoute())
         performSegueWithIdentifier("suggestionSegue", sender: self);
     }
     
-    @IBAction func getSuggestion(sender: AnyObject) {
-        del.user.suggest(["token": self.del.user.getLoginToken()]) { (succeeded: Bool, msg: String) -> () in
+    func getTodaysSuggestions(refreshUI: (() -> Void)!) {
+        del.user.todaysSuggestions() { (succeeded: Bool, msg: String, suggestions: [SuggestionModel]?) -> () in
+            if (succeeded) {
+                println(suggestions)
+                self.del.user.suggestionList = suggestions!
+            } else {
+        
+            }
+            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                refreshUI()
+            })
+        }
+    }
+    
+    /*func getSuggestion(refreshUI: (() -> Void)!) {
+        del.user.suggest(["token": self.del.user.getLoginToken()]) { (succeeded: Bool, msg: String, json: NSDictionary?) -> () in
             var alert = UIAlertView(title: "Success!", message: msg, delegate: nil, cancelButtonTitle: "Okay.")
             if(succeeded) {
-                self.del.user.suggestionList = [self.del.createSuggestionModelFromJSON(NSString(string: "wat"))]
+                self.del.user.suggestionList = [self.del.createSuggestionModelFromJSON(json!)]
                 alert.title = "Success!"
                 alert.message = msg
             }
             else {
-                self.del.user.suggestionList = [self.del.createSuggestionModelFromJSON(NSString(string: "wat"))]
+                self.del.user.suggestionList = [self.del.createSuggestionModelFromJSON(json!)]
                 alert.title = "Failed"
                 alert.message = msg
             }
             // Move to the UI thread
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
                 // Show the alert
-                alert.show()
+                //alert.show()
+                refreshUI()
             })
         }
-    }
+    }*/
     
     func locationManager(manager:CLLocationManager, didUpdateLocations locations:[AnyObject]) {
         println("location = \(locations)")
@@ -164,7 +184,7 @@ class FirstViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
 
     func load(name: String) {
-        loadedName = name;
+        loadedName = name
     }
 
     func refreshUI() {
@@ -172,8 +192,7 @@ class FirstViewController: UIViewController, UITableViewDelegate, UITableViewDat
         //if (delText == "Unknown User") {
         //    uNameLabel.text = loadedName
         //} else {
-        uNameLabel.text = del.user.getName()
-        println(self.del.user.suggestionList)
+        uNameLabel.text = "Hello, " + del.user.getName()
         suggestionTableView.reloadData()
         //}
     }
@@ -181,7 +200,8 @@ class FirstViewController: UIViewController, UITableViewDelegate, UITableViewDat
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject!) {
         if (segue.identifier == "suggestionSegue") {
             var vc = segue.destinationViewController as SuggestionViewController
-            vc.pageState = 0;
+            vc.pageState = 0
+            vc.originView = 0
         }
     }
 

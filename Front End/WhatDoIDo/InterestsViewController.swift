@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 
 class InterestsViewController: UIViewController {
-    
+    @IBOutlet var backButton : UIButton!
     var del = UIApplication.sharedApplication().delegate as AppDelegate
     
     override func viewDidLoad() {
@@ -21,6 +21,17 @@ class InterestsViewController: UIViewController {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    @IBAction func returnToSettings() {
+        performSegueWithIdentifier("settings", sender: self)
+    }
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject!) {
+        if (segue.identifier == "settings") {
+            var vc = segue.destinationViewController as UITabBarController
+            vc.tabBarController?.selectedIndex = 2
+        }
     }
     
     
