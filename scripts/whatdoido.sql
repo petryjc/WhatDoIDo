@@ -34,31 +34,56 @@ CREATE TABLE Users_Locations
     user_id int,
     location_id int,
     time DATETIME,
+    is_route BOOLEAN,
     CONSTRAINT FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
     CONSTRAINT FOREIGN KEY (location_id) REFERENCES Locations(location_id) ON DELETE CASCADE,
     CONSTRAINT PRIMARY KEY (user_id, location_id, time)
 );
 
-CREATE TABLE Cyclical_Events
+CREATE TABLE Events
 (
     event_id int PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    event_type VARCHAR(30),
     user_id int,
     location_id int,
     name VARCHAR(100),
-    cycle_type ENUM("daily", "weekly", "monthly"),
-    occurances VARCHAR(10000),
+    locked BOOLEAN,
+    deleted BOOLEAN,
     CONSTRAINT FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
     CONSTRAINT FOREIGN KEY (location_id) REFERENCES Locations(location_id) ON DELETE CASCADE
 );
 
+CREATE TABLE Cyclical_Events
+(
+    cyclical_event_id int PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    event_id int,
+    cycle_type ENUM("daily", "weekly", "monthly"),
+    occurances VARCHAR(10000),
+    CONSTRAINT FOREIGN KEY (event_id) REFERENCES Events(event_id) ON DELETE CASCADE
+);
+
+CREATE TABLE Spanning_Events
+(
+    spanning_event_id int PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    event_id int,
+    min_time_between DATETIME,
+    range_of_span DATETIME,
+    avg_length_of_event DATETIME,
+    avg_time_of_day DATETIME,
+    last_occurence DATETIME,
+    time_of_day_sdev DATETIME,
+    CONSTRAINT FOREIGN KEY (event_id) REFERENCES Events(event_id) ON DELETE CASCADE
+);
+
+CREATE TABLE Buddies
+(
+    requester_id int,
+    requestee_id int,
+    approved BOOLEAN,
+    CONSTRAINT PRIMARY KEY (requester_id, requestee_id),
+    CONSTRAINT FOREIGN KEY (requester_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    CONSTRAINT FOREIGN KEY (requestee_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+
 INSERT INTO `Users` (`user_id`, `username`, `email`, `password`, `salt`) 
 VALUES ('1', 'mobile', 'mobile@summary.com', SHA1(CONCAT('mobile', 'bec7f06710081143365387b79aeb59ad')), 'bec7f06710081143365387b79aeb59ad');
-
-GRANT USAGE ON Summary.* TO 'sql_user'@'localhost';
-DROP USER 'sql_user'@'localhost';
-FLUSH PRIVILEGES;
-CREATE USER 'sql_user'@'localhost' IDENTIFIED BY 'sql_user_password';
-GRANT ALL PRIVILEGES ON Summary.* TO 'sql_user'@'localhost' WITH GRANT OPTION;
-FLUSH PRIVILEGES;
-
-

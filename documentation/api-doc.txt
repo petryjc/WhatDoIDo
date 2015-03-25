@@ -1,0 +1,168 @@
+This is the api documentation for the WhatDoIDo senior project.  The server 
+should be constantly running at whatdoido.csse.rose-hulman.edu.  The paths listed 
+below should be relative paths from that address.  If ever the system seems to
+be offline or you have any difficulties, contact petryjc@rose-hulman.edu for 
+assistance
+
+TODO
+Add documentation for already in use functions (registration, login, delete account)
+
+EVENTS
+/api/event/list
+Receives
+{
+  "token" : "login_token"
+}
+
+Responds
+{
+  'status': {'msg': 'OK', 'code': 0}, 
+  'events': 
+    [{
+      'locked': 1, 
+      'name': 'test cycle', 
+      'event_id': 11, 
+      'occurances': [['Monday 0:16', 'Monday 0:33'], ['Monday 2:46', 'Monday 2:47']], 
+      'deleted': 0, 
+      'cycle_type': 'weekly', 
+      'event_type': 'cycle',
+      'address': 'The place I am'
+    },
+    {
+      'locked': 0, 
+      'name': 'test cycle2', 
+      'event_id': 12, 
+      'occurances': [['Tuesday 12:30', 'Tuesday 1:00'], ['Monday 2:46', 'Monday 2:47']], 
+      'deleted': 0, 
+      'cycle_type': 'weekly', 
+      'event_type': 'cycle',
+      'address': 'The place I am now'
+    }]
+}
+
+
+
+
+TODO With a refactoring of the database, you would no longer need to provide an event_type 
+/api/event/update
+Receive for cyclical events
+{
+  "token" : "login_token",
+  "event_id" : event_id,
+  "event_type" : "cycle",
+  "locked" : 0,
+  "deleted" : 1,
+  "name" : "This is a new name",
+  "occurances" : [["Monday 12:30","Monday 14:00"],["Saturday 3:00","Saturday 7:00"]],
+  "cycle_type" : "weekly"
+}
+
+Responds
+{
+  'status': {'msg': 'OK', 'code': 0}
+}
+
+Suggestions
+/api/suggestion/calendar
+Does not presently guarantee that events happen in order (but it could be changed to if that's helpful)
+Beginning and end date are inclusive
+
+Receive
+{
+  "token"     : "login_token",
+  "beginning" : "12-01-2014",
+  "ending"    : "12-31-2014"
+}
+
+Responds
+{
+  'status'  : {'msg': 'OK', 'code': 0}, 
+  'calendar' :
+    [{
+      "name" : "test name 1",
+      "location" : "8742 Spend a Buck Ct.",
+      "event_id" : 123,
+      "event_type" : "cycle",
+      "beginning" : "2014-12-15T12:00:00",
+      "ending" : "2014-12-15T14:00:00"
+     },
+     [{
+      "name" : "test name 2",
+      "location" : "5500 Wabash Ave",
+      "event_id" : 666,
+      "event_type" : "cycle",
+      "beginning" : "2014-12-08T12:00:00",
+      "ending" : "2014-12-08T14:00:00"
+     }   
+    ]
+}
+
+Location
+/api/location/add
+Receive
+{
+  "token"     : "login_token",
+  "latitude"  : 74.123
+  "longitude" : 84.321
+}
+
+Responds
+{
+  'status'  : {'msg': 'OK', 'code': 0}
+}
+
+Buddy
+/api/buddy/request
+Sends a request to the recipient to add them as a buddy
+Request
+{
+  “token" : "login_token",
+  "buddy" : "username or email"
+}
+
+/api/buddy/pending_requests
+Returns a list of pending buddy requests
+Request
+{
+  "token" : "login_token"
+}
+
+Returns
+{
+  'status'  : {'msg': 'OK', 'code': 0}, 
+  'requests' : 
+    [
+      {“user_id”:1,”username”:”petryjc”,”email”:"petryjc@rose-hulman.edu"},
+      {“user_id”:2,”username”:”faulknks”,”email”:"faulknks@rose-hulman.edu"},
+      {“user_id”:3,”username”:“gabemadeausername”,”email”:"glenngs@rose-hulman.edu"}
+    ]
+}
+
+/api/buddy/accept
+Accepts a pending friend request
+{
+  “token" : "login_token",
+  "buddy_id" : user_id
+}
+
+/api/buddy/list
+Returns a list of pending buddy requests
+Request
+{
+  "token" : "login_token"
+}
+
+Returns
+{
+  'status'  : {'msg': 'OK', 'code': 0}, 
+  'requests' : 
+    [
+      {“user_id”:1,”username”:”petryjc”,”email”:"petryjc@rose-hulman.edu"},
+      {“user_id”:2,”username”:”faulknks”,”email”:"faulknks@rose-hulman.edu"},
+      {“user_id”:3,”username”:“gabemadeausername”,”email”:"glenngs@rose-hulman.edu"}
+    ]
+}
+
+IMPORTANT NOTE!!! pending_requests returns a list of the users who have requested you as a buddy that you have yet to accept
+list returns all buddies that you have that have been approved
+  

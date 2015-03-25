@@ -3,10 +3,19 @@ import json
 import cherrypy
 import requests
 from datetime import datetime
+from math import *
 
 class Location(object):
 	def index(self):
 		return "Location"
+
+	def checkDistance(self, lat1, lon1, lat2, lon2):
+		dist = Utils.haversine(lat1, lon1, lat2, lon2)
+		MAX_DISTANCE = 2.5 # 2.5 miles is how far one travels in 5 minutes at 30 mph
+		if dist > MAX_DISTANCE:
+			return 1
+		return 0 	
+
 
 	@cherrypy.expose
 	def add(self):
@@ -45,10 +54,22 @@ class Location(object):
 							 VALUES(%s, %s, %s, %s)""", 
 							(body["latitude"], body["longitude"], content['results'][0]['formatted_address'], "I don't know"))
 				if (location_id  != -1):
-					Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time) 
-							VALUES(%s, %s, %s)""",
-							(user_id, location_id, datetime.now()))
+					previousUserLocation = Utils.query("""SELECT location_id FROM Users_Locations 
+													WHERE user_id = %s 
+													ORDER BY time DESC LIMIT 1""", (user_id))
+					previousLocation = Utils.query("""SELECT * FROM Locations WHERE location_id = %s""", (previousUserLocation[0]["location_id"]))
+					
+					is_route = False
+					if len(previousLocation) == 1 and self.checkDistance(previousLocation[0]["latitude"], previousLocation[0]["longitude"],body["latitude"],body["longitude"]) == 1: 
+						is_route = True
+					Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time, is_route) 
+							VALUES(%s, %s, %s, %s)""",
+							(user_id, location_id, datetime.now(), is_route))
 					return json.JSONEncoder().encode( Utils.status_more( 0, "OK" ) )
 			return json.JSONEncoder().encode( Utils.status_more( 35, "Could not save to database" ) )
 
 		return json.JSONEncoder().encode( Utils.status_more( 33, "Could not retrieve location information" ) )
+
+
+
+

@@ -27,13 +27,13 @@ class TestScript:
 		self.randoms = [["4.0","4.0", "random 1", "random 1"],["5.0","5.0", "random 2", "random 2"],["6.0","6.0", "random 3", "random 3"],["7.0","7.0", "random 4", "random 4"]]
 		self.monthly = ["30.00", "30.00", "a monthly place", "monthly"]
 
-		self.home_id = "home"
+		self.home_id = 123
 		self.work_id = "work"
 		self.extra_id = "extra"
 		self.weekly_id = "weekly"
 		self.daily_id = "daily"
-		self.random_ids = [1,2,3,4]
-		self.route_ids = [5,6]
+		self.random_ids = []
+		self.route_ids = []
 		self.monthly_id = "monthly"
 
 		self.user_id = ""
@@ -70,10 +70,10 @@ class TestScript:
 
 	def initUser(self):
 
-		username  = "CyclesTest2"
+		username  = "SpanningTest"
 		password  = "testing"
-		email     = "glenngs@rose-hulman.edu"
-		
+		email     = "bs@rose-hulman.edu"
+
 		registerCommand = json.JSONEncoder().encode({
 		"username" : username,
 		"password" : password,
@@ -88,10 +88,34 @@ class TestScript:
 		})
 
 		loginResult = json.loads(self.callPostCommand(loginCommand, 'api/login'))
+		print(loginResult)
+                print registrationResult
 		self.token =str(loginResult['token'])
 
 		self.user_id = Utils.validate_user(self.token)[1]
 		
+
+	def spanningCycles(self):
+		timeCounter = datetime.datetime(2014, 9, 1)
+		timeDelta = datetime.timedelta(minutes=5)
+		dayCounter = 0
+
+		for i in range(0,500):
+			counter = 0
+			#print i
+			#print timeCounter
+			if dayCounter > 5 and random.randint(0,5) == 0 or dayCounter == 10: 
+				timeCounter = self.addEvent(self.home_id, timeCounter, 2)
+				while counter < 264:
+					timeCounter +=timeDelta
+					counter += 1
+				dayCounter = 0
+				#print "DID IT!!"
+			else:
+				while counter < 288:
+					timeCounter+=timeDelta
+					counter += 1
+			dayCounter += 1	
 
 
 	def simpleCycles(self):
@@ -127,8 +151,8 @@ class TestScript:
 			for o in range(0,4):
 				for i in range(0, 7):
 
-
 					#daily
+					print("========================== " + str(i) + " =============================")
 					if random.randint(0,100) > 15:
 						timeCounter = self.addEvent(self.daily_id, timeCounter, 1)
 					else:
@@ -193,7 +217,7 @@ class TestScript:
 		return timeCounter
 
 	def add(self,place,time):
-		#print(place)
+		print(place)
 		if (place != -1):
 			Utils.execute("""INSERT INTO Users_Locations(user_id, location_id, time) VALUES(%s, %s, %s)""", (str(self.user_id), str(place), time))
 
