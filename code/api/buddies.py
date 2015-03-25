@@ -23,12 +23,20 @@ class Buddy(object):
 
     matching_users = Utils.query("""SELECT * FROM Users WHERE username=%s OR email=%s""", 
               (body["buddy"],body["buddy"]))
-              
+
     if len(matching_users) == 0:
       return json.JSONEncoder().encode( Utils.status_more( 112, "Could not locate user" ) )
     
     matching_user = matching_users[0]
     
+    if matching_user["user_id"] == user_id:
+      return json.JSONEncoder().encode( Utils.status_more( 115, "Cannot be buddies with yourself" ) )
+
+    in_buddies = Utils.query("""SELECT * FROM Buddies WHERE (requester_id = %s AND requestee_id = %s) OR (requester_id = %s AND requestee_id = %s)""", (user_id,matching_user["user_id"],matching_user["user_id"],user_id))
+
+    if any(in_buddies):
+      return json.JSONEncoder().encode( Utils.status_more( 115, "Cannot request buddy when you are already buddies or there is already a pending request between you." ) )
+
     try:
         Utils.execute("""INSERT INTO Buddies(requester_id, requestee_id, approved) VALUE(%s,%s,0)""",
           (user_id,matching_user["user_id"]))

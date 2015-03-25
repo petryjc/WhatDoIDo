@@ -63,21 +63,22 @@ class Suggestion(object):
                 "event_type" : "cycle",
                 "beginning" : (day + timedelta(seconds=occurance[0] - dayStartSeconds)).isoformat(),
                 "ending" : (day + timedelta(seconds=occurance[1] - dayStartSeconds)).isoformat()
+              })
    
-   # print "CALENDAR"
-   # print calendar
-   # print "=========="
-   # self.placeSpanningEvents(user_id, sorted(calendar,key=itemgetter('beginning'))
-   # print "=========="
+    # print "CALENDAR"
+    # print calendar
+    # print "=========="
+    # self.placeSpanningEvents(user_id, sorted(calendar,key=itemgetter('beginning'))
+    # print "=========="
     
     return json.JSONEncoder().encode({"calendar":calendar,"status":Utils.status(0,"OK")})
 
  # def placeSpanningEvents(self, user_id, calendar):
 
-   # spanningEvents = Utils.query("""SELECT * 
+   # spanningEvents = Utils.query(""SELECT * 
    #                                 FROM (Events e JOIN Locations l ON e.location_id = l.location_id) 
    #                                 JOIN Spanning_Events se ON se.event_id = e.event_id
-   #                                 WHERE e.user_id = %s""", (user_id))
+   #                                 WHERE e.user_id = %s"", (user_id))
     
    #for i in range(0, len(calendar) - 1):
      # freeTime = calendar[i+1]["beginning"] - calendar[i]["ending"]
@@ -94,6 +95,7 @@ class Suggestion(object):
         
 
    # print spanningEvents
+
   def scoreCalendar(self, calendar):
     sortedCalendar = sorted(calendar, key=itemgetter('beginning'))
     calendarScore = 0

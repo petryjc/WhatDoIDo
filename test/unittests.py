@@ -311,8 +311,30 @@ class Test(unittest.TestCase):
     self.assertEqual(result['requests'][0]["username"],self.username)
     self.assertEqual(result['requests'][0]["email"],self.email)
     
-        
+  def test_buddy_self_request(self):    
+    command = json.JSONEncoder().encode({"token" :self.loginResult['token'], "buddy":self.username})
+    result = json.loads(callPostCommand(command, 'api/buddy/request'))
+    self.assertEqual(result['status']['msg'],"Cannot be buddies with yourself")
+
+  def test_buddy_already(self):
+     # we need to add someone so we can make them our friend
+    email1     = str(uuid.uuid4())
+    username1  = str(uuid.uuid4())
+    password  = "DONOTCARE"
+
+    #register the extra users
+    json.loads(callPostCommand(json.JSONEncoder().encode({"username" : username1,"password" : password,"email" : email1}), 'api/register'))
+
+    #log them in
+    loginResult1 = json.loads(callPostCommand(json.JSONEncoder().encode({"username": username1,"password" : password}), 'api/login'))
     
+    command = json.JSONEncoder().encode({"token" :self.loginResult['token'], "buddy": username1})
+    result = json.loads(callPostCommand(command, 'api/buddy/request'))
+    self.assertEqual(result["status"]["code"],0)
+    result = json.loads(callPostCommand(command, 'api/buddy/request'))
+    self.assertEqual(result["status"]["msg"],"Cannot request buddy when you are already buddies or there is already a pending request between you.")
+
+
   def tearDown(self):
     deleteAccountCommand = json.JSONEncoder().encode({
       "username" : self.username,
