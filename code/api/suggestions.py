@@ -1,9 +1,11 @@
 from utils import Utils
 from timeutils import Day, Week, Month
+from Queue import PriorityQueue
 import cherrypy
 import json
 from datetime import *
 from operator import itemgetter
+from movie import Movie
 
 class Suggestion(object):
   @cherrypy.expose
@@ -12,17 +14,43 @@ class Suggestion(object):
 
   @cherrypy.expose
   def single(self):
-    #TODO
-    return json.JSONEncoder().encode(
-      {
-        "title":"Test Title",
-        "description":"This is a hard coded, test event for UI testing purposes only",
-        "location":"5500 Wabash Avenue",
-        "justification":"Clearly it's a big deal",
-        "time":datetime.now().isoformat(),
-        "cost":11
-      }
-    )
+    body = json.JSONDecoder().decode( cherrypy.request.body.read() )
+    check = Utils.arg_check(body, ["token"])
+
+    if (check[0]):
+      return check[1]
+
+    # Find the user ID of the person making the request.
+    user_check = Utils.validate_user(body["token"])
+    if(user_check[0]):
+      return user_check[1]
+    user_id = user_check[1]
+
+    t = datetime.now()
+
+    calendar = self.calendar_handler(user_id,t,t)
+
+    #if the user has a current event they are supposed to be doing, tell them to do it    
+    for e in calendar:
+      print("Inside")
+      beginning = datetime.strptime(e["beginning"],"%Y-%m-%dT%H:%M:%S.%f")
+      ending = datetime.strptime(e["ending"],"%Y-%m-%dT%H:%M:%S.%f")
+      if t > beginning and t < ending:
+        return json.JSONEncoder().encode({"location":e["location"],
+                                          "name":e["name"],
+                                          "beginning":datetime.now().isoformat(),
+                                          "status":Utils.status(0,"OK")})      
+
+    #if they don't have a current event, tell them to go to a movie
+
+    movie_results = Movie.get_movies(user_id)
+    if movie_results:
+      print(movie_results)
+      movie_results["name"] = "Movies"
+      return json.JSONEncoder().encode(movie_results)
+
+    return json.JSONEncoder().encode({"name":"Nothing Could Be Found","status":Utils.status(0,"OK")})
+
 
   @cherrypy.expose
   def calendar(self): 
@@ -38,13 +66,18 @@ class Suggestion(object):
       return user_check[1]
     user_id = user_check[1]
 
-    events = Utils.query("""SELECT * 
-                            FROM (Events e JOIN Locations l 
-                            ON e.location_id = l.location_id) JOIN Cyclical_Events ce ON ce.event_id = e.event_id
-                            WHERE user_id = %s""", (user_id))
-
     beginning = datetime.strptime(body["beginning"],"%m-%d-%Y").date()
     ending = datetime.strptime(body["ending"],"%m-%d-%Y").date()
+
+    calendar = self.calendar_handler(user_id,beginning,ending)
+
+    return json.JSONEncoder().encode({"calendar":calendar,"status":Utils.status(0,"OK")})
+
+  def calendar_handler(self,user_id,beginning,ending):
+    events = Utils.query("""SELECT *
+                            FROM (Events e JOIN Locations l
+                            ON e.location_id = l.location_id) JOIN Cyclical_Events ce ON ce.event_id = e.event_id
+                            WHERE user_id = %s""", (user_id))
 
     calendar = []
 
@@ -62,37 +95,67 @@ class Suggestion(object):
                 "event_id" : event["event_id"],
                 "event_type" : "cycle",
                 "beginning" : (day + timedelta(seconds=occurance[0] - dayStartSeconds)).isoformat(),
-                "ending" : (day + timedelta(seconds=occurance[1] - dayStartSeconds)).isoformat()
+                "ending" : (day + timedelta(seconds=occurance[1] - dayStartSeconds)).isoformat()})
+
+    return calendar
+    
+
+  def placeSpanningEvents(self, user_id, calendar, beginning, ending):
+
+    sortedCalendar = sorted(calendar, key=itemgetter('beginning'))
+
+    spanningEvents = Utils.query("""SELECT * 
+                                    FROM (Events e JOIN Locations l ON e.location_id = l.location_id) 
+                                    JOIN Spanning_Events se ON se.event_id = e.event_id
+                                    WHERE e.user_id = %s""", (user_id))
+    eventsByDaysLeft = []
+
+    for i in range(0, len(spanningEvents)-1):
+      lastOccurance = Utils.query("""SELECT time
+                                     FROM Users_Locations
+                                     ORDER BY time DESC
+                                     WHERE user_id = %s
+                                     AND location_id = %s
+                                     AND is_route = 0
+                                     LIMIT 1""", (user_id, spanningEvents[i]["location_id"]))
+      spanningEvents[i]["last_occurance"] = lastOccurance
+      spanningEvents[i]["last_chance"] = lastOccurance + spanningEvents[i]["min_time_between"] + spanningEvents[i]["range_of_span"]
+
+    pq = PriorityQueue()
+
+    eventsThatCanBePlaced = [e for e in spanningEvents if (e["last_occurance"] + e["min_time_between"]) >= beginning and (e["last_occurance"] + e["min_time_between"]) <= ending]
+    sortedEventsToPlace = sorted(eventsThatCanBePlaced, itemgetter('last_chance'))
+    pq.put(0,(sortedCalendar,sortedEventsToPlace,[]))
+    while not pq.empty():
+      (currentScore, (currentCalendar, eventsToPlace, placedEvents)) = pq.get()
+      if eventsToPlace.empty(): # We've placed every event in the calendar. Good job!
+        return currentCalendar
+      for i in range(0, len(currentCalendar) - 2):
+        eventEnding = strptime(currentCalendar[i]["ending"], "%Y-%m-%dT%H:%M:%S")
+        eventBeginning = strptime(currentCalendar[i+1]["beginning"],"%Y-%m-%dT%H:%M:%S")
+        time_between_events = eventBeginning - eventEnding
+        num_placed = 0
+        for s in range(0, len(eventsToPlace) - 1):
+          if eventENding - eventsToPlace[s]["last_occurance"] >= eventsToPlace[s]["min_time_between"] and time_between_events > eventsToPlace[s]["avg_length_of_event"]:
+            num_placed += 1
+            nextCalendar = list(currentCalendar)
+            nextEventsToPlace = list(eventsToPlace)
+            nextPlacedEvents = list(placedEvents)
+            nextCalendar.insert(i+1,{
+              "name" : eventsToPlace[s]["name"],
+              "location" : eventsToPlace[s]["address"],
+              "event_id" : eventsToPlace[s]["event_id"],
+              "event_type" : "spanning",
+              "beginning" : eventEnding,
+              "ending" : eventEnding + eventsToPlace[s]["avg_length_of_event"]
               })
-   
-    # print "CALENDAR"
-    # print calendar
-    # print "=========="
-    # self.placeSpanningEvents(user_id, sorted(calendar,key=itemgetter('beginning'))
-    # print "=========="
-    
-    return json.JSONEncoder().encode({"calendar":calendar,"status":Utils.status(0,"OK")})
-
- # def placeSpanningEvents(self, user_id, calendar):
-
-   # spanningEvents = Utils.query(""SELECT * 
-   #                                 FROM (Events e JOIN Locations l ON e.location_id = l.location_id) 
-   #                                 JOIN Spanning_Events se ON se.event_id = e.event_id
-   #                                 WHERE e.user_id = %s"", (user_id))
-    
-   #for i in range(0, len(calendar) - 1):
-     # freeTime = calendar[i+1]["beginning"] - calendar[i]["ending"]
-     # for spanningEvent in spanningEvents:
-     #   if freeTime > spanningEvent["avg_length_of_event"]
-     #     calendar.append({
-     #           "name" : spanningEvent["name"],
-     #           "location" : spanningEvent["address"],
-     #           "event_id" : spanningEvent["event_id"],
-     #           "event_type" : "spanning",
-     #           "beginning" : calendar[i]["ending"],
-     #           "ending" : calendar[i+1]["beginning"]
-     #         })
-        
+            nextPlacedEvents.append(nextEventsToPlace.pop(s))
+            nextCalendarScore = self.scoreCalendar(nextCalendar)
+            pq.put((nextCalendarScore,(nextCalendar,nextEventsToPlace,nextPlacedEvents)))
+        if num_placed == 0: # We don't have room for more events.
+          return currentCalendar
+    print "Well, something done goofed."
+    print "Emptied PriorityQueue while placing Spanning Events."        
 
    # print spanningEvents
 

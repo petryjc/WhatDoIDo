@@ -2,6 +2,7 @@ import MySQLdb
 import MySQLdb.cursors
 import json
 import traceback
+from math import *
 
 class Utils:
   @staticmethod
@@ -83,17 +84,17 @@ class Utils:
       }
     }
     
-    @staticmethod
-    def haversine(lat1, lon1, lat2, lon2):
-	R = 3958.8 # Earth radius in miles
+  @staticmethod
+  def haversine(lat1, lon1, lat2, lon2):
+    R = 3958.8 # Earth radius in miles
 
-	dLat = radians(lat2 - lat1)
-	dLon = radians(lon2 - lon1)
-	lat1 = radians(lat1)
-	lat2 = radians(lat2)
+    dLat = radians(lat2 - lat1)
+    dLon = radians(lon2 - lon1)
+    lat1 = radians(lat1)
+    lat2 = radians(lat2)
 
-	a = sin(dLat/2)**2 + cos(lat1)*cos(lat2)*sin(dLon/2)**2
-	c = 2*asin(sqrt(a))
+    a = sin(dLat/2)**2 + cos(lat1)*cos(lat2)*sin(dLon/2)**2
+    c = 2*asin(sqrt(a))
 
-	return R * c
+    return R * c
 

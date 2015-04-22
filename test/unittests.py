@@ -42,6 +42,21 @@ def add_data(o):
 
   return {"location_id" : location_id, "event_id" : event_id }
     
+def add_data2(o,occurances):
+  location_id = Utils.execute_id("""INSERT INTO Locations(address) VALUES('The place I am')""",())
+  user_id = Utils.query("""SELECT user_id
+                            FROM User_Sessions
+                            WHERE session_token = %s;""", (o.loginResult['token']))
+
+  event_id= Utils.execute_id("""INSERT INTO Events(event_type,user_id,name,location_id,locked,deleted)
+                                VALUES ('cycle',%s,'test cycle',%s,TRUE,FALSE);""",
+                                (user_id[0]["user_id"], location_id))
+
+  Utils.execute("""INSERT INTO Cyclical_Events(event_id, cycle_type, occurances)
+                          VALUES(%s,'weekly',%s)""", (event_id, json.JSONEncoder().encode(occurances)))
+
+  return {"location_id" : location_id, "event_id" : event_id }
+
   
 class Test(unittest.TestCase):
 
@@ -333,6 +348,33 @@ class Test(unittest.TestCase):
     self.assertEqual(result["status"]["code"],0)
     result = json.loads(callPostCommand(command, 'api/buddy/request'))
     self.assertEqual(result["status"]["msg"],"Cannot request buddy when you are already buddies or there is already a pending request between you.")
+
+  def test_single(self):
+    t = datetime.now()
+    data = add_data2(self,[(Week.seconds(t) - 500,Week.seconds(t) + 300)])
+    command = json.JSONEncoder().encode({"token" :self.loginResult['token']})
+    result = json.loads(callPostCommand(command, 'api/suggestion/single'))
+    print result
+
+  def test_single_no_events(self):
+    data = add_data2(self,[])
+    command = json.JSONEncoder().encode({"token" :self.loginResult['token']})
+    result = json.loads(callPostCommand(command, 'api/suggestion/single'))
+    print result
+
+  def test_single_movie(self):
+    data = add_data2(self,[])
+
+    locationSaveCommand = json.JSONEncoder().encode({
+      "latitude" : 39.482876,
+      "longitude" : -87.323493,
+      "token" : self.loginResult["token"]
+    })
+
+    locationResult = json.loads(callPostCommand(locationSaveCommand, 'api/location/add'))
+    command = json.JSONEncoder().encode({"token" :self.loginResult['token']})
+    result = json.loads(callPostCommand(command, 'api/suggestion/single'))
+    print result
 
 
   def tearDown(self):
