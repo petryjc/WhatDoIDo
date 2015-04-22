@@ -156,9 +156,6 @@ class Test(unittest.TestCase):
     locationResult = json.loads(callPostCommand(locationSaveCommand, 'api/location/add'))
     
     self.assertEqual(locationResult['status']['code'],0)
-    
-  def test_suggestion_single(self):
-    self.assertTrue( callPostCommand("", 'api/suggestion/single'))
 
   def test_calendar(self):
     data = add_data(self)
