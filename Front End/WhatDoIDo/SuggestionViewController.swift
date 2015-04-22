@@ -13,10 +13,14 @@ class SuggestionViewController: UIViewController {
 
     var del = UIApplication.sharedApplication().delegate as AppDelegate
     var pageState: Int!
+    var originView: Int!
+    var dayDetailInfo: [SuggestionModel]?
+    var dayDetailDate: CVDate?
     @IBOutlet var segmentedControl : UISegmentedControl!
     @IBOutlet var suggestionName : UILabel!
     @IBOutlet var descriptionText : UILabel!
     @IBOutlet var routeText : UILabel!
+    @IBOutlet var backButton : UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -55,10 +59,27 @@ class SuggestionViewController: UIViewController {
         }
     }
     
+    @IBAction func segueBack() {
+        if (self.originView == 0) {
+            performSegueWithIdentifier("suggestionBackSegue", sender: self)
+        } else if (self.originView == 1) {
+            performSegueWithIdentifier("dayDetailBackSegue", sender: self)
+        }
+    }
+    
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject!) {
-        if (segue.identifier != "suggestionBackSegue") {
+        if (segue.identifier != "suggestionBackSegue" && segue.identifier != "dayDetailBackSegue") {
             var vc = segue.destinationViewController as SuggestionViewController
             vc.pageState = segmentedControl.selectedSegmentIndex
+            vc.originView = self.originView
+            vc.dayDetailInfo = self.dayDetailInfo
+            vc.dayDetailDate = self.dayDetailDate
+        } else if (self.originView == 0) {
+            var vc = segue.destinationViewController as UITabBarController
+        } else if (self.originView == 1) {
+            var vc = segue.destinationViewController as DayDetailViewController
+            vc.suggestionList = self.dayDetailInfo
+            vc.date = self.dayDetailDate
         }
     }
     

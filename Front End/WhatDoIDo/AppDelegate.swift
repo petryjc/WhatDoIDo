@@ -48,9 +48,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
 
-    func createSuggestionModelFromJSON(json: NSString) -> SuggestionModel {
+    func createSuggestionModelFromJSON(json: NSDictionary) -> SuggestionModel {
         // Use the JSON passed back from the suggestions call to create a Suggestion Model.
-        return SuggestionModel()
+        println(json)
+        var sug = SuggestionModel()
+        sug.name = json["title"] as String
+        sug.description = json["description"] as String
+        sug.location = json["location"] as String
+        sug.startTime = json["time"] as String
+        return sug
     }
     
 }
