@@ -37,7 +37,9 @@ class DayDetailViewController: UIViewController, UITableViewDelegate {
         //var cell = UITableViewCell(style: UITableViewCellStyle.Value2, reuseIdentifier: nil);
         
         if let name = self.suggestionList?[indexPath.row].getName() {
-            cell.textLabel.text = name
+            var time = self.suggestionList?[indexPath.row].getStartTime()
+            var nsTime = time! as NSString
+            cell.textLabel.text = nsTime.substringWithRange(NSRange(location: 11, length: 5)) + " - " + name
         }
         return cell
     }

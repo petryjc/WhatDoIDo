@@ -53,7 +53,10 @@ class FirstViewController: UIViewController, UITableViewDelegate, UITableViewDat
         
         //var cell = UITableViewCell(style: UITableViewCellStyle.Value2, reuseIdentifier: nil);
         
-        cell.textLabel.text = self.del.user.suggestionList[indexPath.row].getName()
+        var name = self.del.user.suggestionList[indexPath.row].getName()
+        var time = self.del.user.suggestionList[indexPath.row].getStartTime()
+        var nsTime = time as NSString
+        cell.textLabel.text = nsTime.substringWithRange(NSRange(location: 11, length: 5)) + " - " + name
         return cell
     }
     
