@@ -86,10 +86,16 @@ class SuggestionViewController: UIViewController {
     func refreshUI() {
         self.suggestionName.text = del.suggestionModel.getName()
         if (self.descriptionText != nil) {
+            self.descriptionText.text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+        }
+        if (self.routeText != nil) {
+            self.routeText.text = "Go this way on that road. Then go the other way until you get there."
+        }
+        /*if (self.descriptionText != nil) {
             self.descriptionText.text = del.suggestionModel.getDesc()
         }
         if (self.routeText != nil) {
             self.routeText.text = del.suggestionModel.getRoute()
-        }
+        }*/
     }
 }

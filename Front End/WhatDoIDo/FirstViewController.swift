@@ -16,6 +16,8 @@ class FirstViewController: UIViewController, UITableViewDelegate, UITableViewDat
     //@IBOutlet var refreshButton : UIButton!
     @IBOutlet var suggestionTableView : UITableView!
     //@IBOutlet var suggestButton : UIButton!
+    @IBOutlet var suggestButton : UIButton!
+    @IBOutlet var singleSuggestion : UILabel!
     
     var locationManager = CLLocationManager()
     
@@ -23,6 +25,15 @@ class FirstViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var loadedName: String!
     
     @IBAction func refresh() {
+        if (self.singleSuggestion != nil) {
+            if (self.singleSuggestion.text == "Watch a movie.") {
+                self.singleSuggestion.text = "Read a book."
+            } else if (self.singleSuggestion.text == "Read a book.") {
+                self.singleSuggestion.text = "Go to a concert in town."
+            } else {
+                self.singleSuggestion.text = "Watch a movie."
+            }
+        }
         self.refreshUI()
     }
     

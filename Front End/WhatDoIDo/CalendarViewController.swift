@@ -52,25 +52,20 @@ class CalendarViewController: UIViewController, CVCalendarViewDelegate {
     }
     
     func dotMarker(colorOnDayView dayView: CVCalendarDayView) -> UIColor {
-        if dayView.date?.day == 3 {
-            return .redColor()
-        } else if dayView.date?.day == 5 {
-            return .blackColor()
-        } else if dayView.date?.day == 2 {
+        /*var numSuggestions = self.monthSuggestions[dayView.date!.day! - 1].count
+        if numSuggestions <= 3 {
+            return .greenColor()
+        } else if numSuggestions <= 5 {
             return .blueColor()
-        }
+        } else if numSuggestions >= 9 {
+            return .redColor()
+        }*/
         
-        return .greenColor()
+        return .whiteColor()
     }
     
     func dotMarker(shouldShowOnDayView dayView: CVCalendarDayView) -> Bool {
-        return false
-        /*
-        if dayView.date?.day == 3 || dayView.date?.day == 5 || dayView.date?.day == 2 {
-            return true
-        } else {
-            return false
-        }*/
+        return false // self.monthSuggestions[dayView.date!.day! - 1].count != 0
     }
     
     func dotMarker(shouldMoveOnHighlightingOnDayView dayView: CVCalendarDayView) -> Bool {
